@@ -1,0 +1,58 @@
+{
+  "_megjegyzes": [
+    "Ügyfelenkénti állandó adatok a TIG-hez. Azért van külön fájlban, mert ezek",
+    "évekig változatlanok (szerződés kelte, ingatlan címe), és ha havonta kézzel",
+    "gépelnénk újra, előbb-utóbb elírnánk. A havonta változó mezők (időszak,",
+    "összeg, kelt) nem ide tartoznak - azok a TIG bemeneti JSON-jébe.",
+    "Új ügyfélnél: másold az egyik blokkot és töltsd ki. A drive_mappa a",
+    "tárgyévi mappa ID-ja, oda kerül a kész TIG."
+  ],
+
+  "NFP": {
+    "nev": "Napfény Park",
+    "tipus": "erste",
+    "megrendelo": "ERSTE Nyíltvégű Ingatlan Befektetési Alap",
+    "munka_megjelolese": "Napfény Park Bevásárlóközpont (Szeged, Szabadkai u. 7.), marketing feladatainak ellátásához kapcsolódó 2015. november 4. napján kelt szerződés és annak mellékletei alapján.",
+    "kelt_hely": "Budapest",
+    "fajlnev_minta": "{ho}_NFP_marketing_TIG_{ev}.docx",
+    "drive_mappa_2026": "1SybRQnCPGcYKVJc1YgQ-DT1UTa1xePsV",
+    "drive_mappa_gyoker": "1hGQOoaEJTx0OMDEI3N8RzY8ZWr0CSqFb"
+  },
+
+  "TC": {
+    "nev": "Target Center",
+    "tipus": "erste",
+    "megrendelo": "ERSTE Nyíltvégű Ingatlan Befektetési Alap",
+    "munka_megjelolese": "Target Center Bevásárlóközpont (Kecskemét, Izsáki út 12/b), marketing feladatainak ellátásához kapcsolódó 2022. február 1. napján kelt szerződés és annak mellékletei alapján.",
+    "kelt_hely": "Budapest",
+    "fajlnev_minta": "{ho}_TC_marketing_TIG_{ev}.docx",
+    "drive_mappa_2026": "1WAOKoKQlERWuAV65HreZOfZ0mAL7-XTo",
+    "drive_mappa_gyoker": "1dJUO0q4Uwc1rwArQNsni6FG-onKcH_3-"
+  },
+
+  "CK": {
+    "nev": "Corso Kaposvár",
+    "tipus": "erste",
+    "megrendelo": "ERSTE Nyíltvégű Ingatlan Befektetési Alap",
+    "munka_megjelolese": "CORSO Bevásárlóközpont (7401 Kaposvár, Áchim András u. 4.), marketing feladatainak ellátásához kapcsolódó 2021. június 3. napján kelt szerződés és annak mellékletei alapján.",
+    "kelt_hely": "Budapest",
+    "fajlnev_minta": "{ho}_CK_marketing_TIG_{ev}.docx",
+    "drive_mappa_2026": "1hnxKKP5Wzn5vIjIO9TWTrSHbRELzcMG4",
+    "drive_mappa_gyoker": "1uVK_ZrCU9G2zGITSW_ij29RGvh7KY3JT",
+    "figyelem": "2025-ben néhány fájl 'KC' kóddal készült CK helyett. Kereséskor mindkettőre nézz rá."
+  },
+
+  "ARCIDEAL": {
+    "nev": "Arcideál Kft.",
+    "tipus": "altalanos",
+    "igazolo": "Arcideál Kft.",
+    "kelt_hely": "Szeged",
+    "megjegyzes": [
+      "Itt nem csak a Marketing Store havidíjához kell TIG, hanem az alvállalkozók",
+      "(pl. Dobó István EV, Kurucsai János EV) teljesítéséhez is - mindegyiket",
+      "Arcideál Kft. írja alá. Az EV-k jellemzően alanyi adómentesek: afa: 'AAM'.",
+      "Egy hónapban tehát több TIG is készül ugyanarra az időszakra."
+    ],
+    "fajlnev_minta": "Arcideál TIG - {targy} {ev}.{ho}. hó.docx"
+  }
+}
