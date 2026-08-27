@@ -4,7 +4,10 @@ description: |
   Használd ezt a skillt minden Marketing Store-os gazdasági / pénzügyi adminisztrációs
   feladatnál: bejövő (szállítói) számlák begyűjtése és rendszerezése a havi könyvelési
   mappába, TIG-ek (teljesítésigazolások) elkészítése, és a kimenő számlázás előkészítése
-  a Számlázz.hu-hoz. Trigger kifejezések: 'számlák', 'számlázás', 'számlagyűjtés',
+  a Számlázz.hu-hoz. AKKOR IS ezt használd, ha a kérés a QUiCK-et (Riport Applications)
+  vagy az azt hívó n8n workflow-kat érinti — a szállítói számlák nyilvántartása ott van,
+  és a havi könyvelési csomagot onnan tölti le egy workflow. Trigger kifejezések:
+  'számlák', 'számlázás', 'számlagyűjtés', 'QUiCK', 'költségszámla', 'szállítói számla',
   'könyvelési anyag', 'havi zárás', 'lekönyvelendő', 'TIG', 'teljesítésigazolás',
   'teljesítés igazolás', 'kiállítható a számla', 'mit kell még bekérni', 'megvan-e minden
   számla', 'továbbszámlázás', 'ad spend elszámolás', 'küldjük a könyvelőnek'. AKKOR IS
@@ -45,36 +48,45 @@ Ezek minden dokumentumon szerepelnek, ne kérdezd újra:
 
 ## Hol van minden
 
-Minden a közös Google Drive-on van, a Drive connectoron keresztül éred el. A pontos
-mappa-ID-k, elnevezési konvenciók és ügyfélmappák: **`references/drive-terkep.md`**.
-A két horgony, amit érdemes fejben tartani:
+**A szállítói számlák elsődleges forrása a QUiCK** (Riport Applications), nem a Drive.
+A Drive-on lévő havi könyvelési mappa ebből származtatott anyag: egy n8n workflow
+tölti le és rendezi oda. API, végpontok és a négy meglévő workflow:
+**`references/quick-n8n.md`**.
 
-- `0Könyvelési anyag/Konyveles ÉÉÉÉ-HH/` — a havi bejövő számlák
+A dokumentumok a közös Google Drive-on vannak, a Drive connectoron keresztül. Pontos
+mappa-ID-k és elnevezési konvenciók: **`references/drive-terkep.md`**. A két horgony:
+
+- `0Könyvelési anyag/Konyveles ÉÉÉÉ-HH/` — a havi bejövő számlák (gépi)
 - `Erste/<központ neve>/<év>/` — az ERSTE-s havi TIG-ek
+
+A QUiCK API-t **csak n8n-en keresztül** lehet hívni: a token az n8n credentialban van
+(„Quick API token"), és az n8n soha nem adja ki a titkos mezőket. Adatlekéréshez tehát
+workflow-t futtatsz vagy építesz.
 
 ## A három szál
 
-### 1. Bejövő számlák begyűjtése
+### 1. Bejövő számlák
 
-Ez a leghosszabb és legkevésbé automatizálható rész, mert a számlák háromféle úton
-érkeznek: van, ami e-mailben jön (több különböző fiókba), van, amiért be kell lépni
-a szolgáltató felületére, és van, amit a kolléganőtől kell elkérni. Épp ezért itt a
-skill fő értéke nem a gépi munka, hanem hogy **számon tartja, mi hiányzik**.
+A begyűjtés automatizált: a „Havi könyvelési csomag" workflow minden hónap 3-án
+letölti a QUiCK-ből az előző hónap számlaképeit és feltölti a havi Drive-mappába.
+**A feladat tehát az ellenőrzés, nem a gyűjtés.**
 
-Részletes folyamat, forrásregiszter és a visszatérő szállítók listája:
+A hiány két helyen keletkezhet, és a kettőt szét kell választani, mert más a teendő:
+ha a tétel **nincs a QUiCK-ben**, azt be kell kérni; ha **a QUiCK-ben megvan, de nem
+került a mappába** (nincs számlakép, vagy részlegesen futott a workflow), akkor
+szállítót zaklatni felesleges. Folyamat és a visszatérő szállítók ellenőrzőlistája:
 **`references/szamlabegyujtes.md`**.
 
-A gépies részt szkript végzi — sorszámozás, elnevezés, a köteg ellenőrzése:
-
 ```bash
-python3 scripts/szamla_rendez.py ellenoriz --mappa <havi mappa>   # folytonos-e a számozás
-python3 scripts/szamla_rendez.py atnevez manifest.json --mappa <mappa> --szimulacio
+python3 scripts/szamla_rendez.py ellenoriz --mappa <havi mappa>   # ép-e a köteg
 python3 scripts/szamla_rendez.py osszesito --mappa <mappa> --csv ossz.csv
+python3 scripts/szamla_rendez.py atnevez manifest.json --mappa <mappa> --szimulacio
 ```
 
-A PDF-ekből a szállítót és a keltet neked kell kiolvasnod (ez ítélet kérdése), a
-manifestbe írnod, és onnan a szkript viszi tovább. **Átnevezés előtt mindig futtasd
-`--szimulacio`-val** — átnevezni könnyű, visszacsinálni nem.
+A fájlnévben lévő dátum a **teljesítés dátuma** (`fulfilled_at`), nem a számla kelte.
+Kézi pótlásnál a szkript névtisztítója bitre ugyanaz, mint a workflow-é, hogy a pótolt
+fájl ne lógjon ki. **Átnevezés előtt mindig futtasd `--szimulacio`-val** — az
+`atnevez` 001-től újraszámoz.
 
 ### 2. TIG-ek
 
@@ -114,13 +126,18 @@ számlakorrekció. Ha egy szállítói számla nincs meg, az „hiányzik" — n
 mondd meg konkrétan, mi hiányzik, kitől kell bekérni, és mi az, ami emiatt csúszik.
 Ne hallgasd el, hogy egy TIG-hez nincs meg az összeg.
 
-**Írd vissza, amit megtudsz.** A forrásregiszter (`references/szamlabegyujtes.md`) és
-az ügyfélregiszter (`references/ugyfelek.json`) szándékosan bővíthető. Ha kiderül, hogy
-egy szállító számlája máshonnan jön, mint ami oda van írva, vagy új ügyfél lép be,
-frissítsd a fájlt — ez a skill memóriája, és csak akkor ér valamit, ha karban van tartva.
+**Írd vissza, amit megtudsz.** Az ügyfélregiszter (`references/ugyfelek.json`), a
+szállítólista (`references/szamlabegyujtes.md`) és a QUiCK-leírás
+(`references/quick-n8n.md`) szándékosan bővíthető. Ha új ügyfél lép be, új API-végpont
+derül ki, vagy változik egy workflow, frissítsd a fájlt — ez a skill memóriája, és
+csak akkor ér valamit, ha karban van tartva.
 
 **Fájlműveletnél óvatosan.** Drive-ra feltöltés és átnevezés előtt mondd el, mit
 fogsz csinálni, és mutasd a listát. A `--szimulacio` kapcsoló pont ezért van.
+
+**Workflow-t ne futtass próbaképp.** A három aktív n8n workflow közül kettő e-mailt
+küld, egy Drive-ra ír és mappát hoz létre — ezek kifelé ható műveletek, kérdezz előbb.
+A „QUiCK API felderítés" viszont read-only, azt nyugodtan lehet.
 
 ## Függőségek
 

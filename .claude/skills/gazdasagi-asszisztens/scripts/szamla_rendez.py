@@ -3,14 +3,23 @@
 
 A havi könyvelési mappában a számlák elnevezése:
 
-    {sorszám}_{számla kelte}_{szállító neve}.pdf     pl. 128_2026-07-31_GOOGLE_IRELAND_LIMITED.pdf
+    {sorszám}_{teljesítés dátuma}_{szállító neve}.pdf
+    pl. 128_2026-07-31_GOOGLE_IRELAND_LIMITED.pdf
 
-A sorszám a számla kelte szerint növekvő, 001-től, a hónapon belül folytonos.
+A dátum a **teljesítés dátuma** (a QUiCK-ben `fulfilled_at`), nem a számla kelte
+és nem a fizetési határidő. A sorszám eszerint növekvő, 001-től, a hónapon belül
+folytonos.
 
-Munkamegosztás: a PDF-ből a szállítót és a keltet kiolvasni ítélet kérdése
-(sokféle számlakép, idegen nyelv, dátumformátumok) - azt az agent végzi, és egy
-manifest JSON-ba írja. A sorrendezés, sorszámozás, névtisztítás és az ütközések
-kiszűrése viszont gépies és hibaérzékeny, ezért az itt van, kódban.
+Fontos: a havi köteget rendes esetben a "Havi könyvelési csomag" n8n workflow
+állítja elő a QUiCK API-ból, nem ez a szkript - lásd `references/quick-n8n.md`.
+Ez a szkript a maradékra való: kézzel pótolt számla beillesztésére, és annak
+ellenőrzésére, hogy a gépi köteg ép-e (a workflow részsikerrel is lefuthat, és
+akkor hézag marad a számozásban).
+
+Munkamegosztás: ha kézzel pótolsz, a szállítót és a teljesítés dátumát az agent
+olvassa ki a PDF-ből (ez ítélet kérdése), és manifest JSON-ba írja. A
+sorrendezés, sorszámozás, névtisztítás és az ütközések kiszűrése gépies és
+hibaérzékeny, ezért van kódban.
 
     python3 szamla_rendez.py atnevez manifest.json --mappa ./Konyveles_2026-08
     python3 szamla_rendez.py ellenoriz --mappa ./Konyveles_2026-08
@@ -25,8 +34,8 @@ import re
 import sys
 from collections import Counter
 
-# A Drive-on lévő tényleges fájlnevek alapján: ékezet és pont marad, a szóköz
-# aláhúzás lesz, a hosszú cégneveket a forrásrendszer ~60 karakternél levágja.
+# Ékezet és pont marad, a szóköz aláhúzás lesz, a hosszú cégnév 60 karakternél
+# levágódik - ezt a határt a "Havi könyvelési csomag" workflow szabja meg.
 SZALLITO_MAX = 60
 FAJLNEV_MINTA = re.compile(
     r"^(?P<sorszam>\d{3})_(?P<datum>\d{4}-\d{2}-\d{2})_(?P<szallito>.+)\.(?P<ext>[Pp][Dd][Ff])$"
@@ -34,20 +43,53 @@ FAJLNEV_MINTA = re.compile(
 
 
 def tisztit_szallito(nev: str) -> str:
-    """Szállítónév fájlnévbe. Ékezetet szándékosan megtartunk."""
-    nev = nev.strip()
-    nev = re.sub(r"\s+", "_", nev)
-    # Ami fájlnévben tilos vagy zavaró; a pont és a vessző maradhat.
+    """Szállítónév fájlnévbe.
+
+    Szándékosan bitre ugyanaz, mint a "Havi könyvelési csomag" n8n workflow
+    `tiszta()` függvénye - a kézzel pótolt számla neve nem térhet el a gépitől,
+    különben a köteg ellenőrzése hamis eltérést jelezne. Az eredeti:
+
+        String(s||'').replace(/[\\/:*?"<>|]/g,'-').replace(/\\s+/g,'_').slice(0,60)
+
+    Tehát: előbb a tiltott karakterek, utána a szóköz, végül vágás 60-nál -
+    záró aláhúzás levágása NINCS, mert a workflow sem csinálja.
+    """
+    nev = str(nev or "")
     nev = re.sub(r'[/\\:*?"<>|]', "-", nev)
-    return nev[:SZALLITO_MAX].rstrip("_")
+    nev = re.sub(r"\s+", "_", nev)
+    return nev[:SZALLITO_MAX]
 
 
-def uj_nev(sorszam: int, datum: str, szallito: str, ext: str = "pdf") -> str:
-    return f"{sorszam:03d}_{datum}_{tisztit_szallito(szallito)}.{ext}"
+def uj_nev(sorszam: int, teljesites: str, szallito: str, ext: str = "pdf") -> str:
+    return f"{sorszam:03d}_{teljesites}_{tisztit_szallito(szallito)}.{ext}"
 
 
 def _datum_ok(d: str) -> bool:
     return bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", d))
+
+
+def _tartomanyok(szamok, max_db=12):
+    """[2,3,4,7,9,10] -> '2-4, 7, 9-10'.
+
+    Részlegesen lefutott workflow után több száz sorszám is hiányozhat; a nyers
+    lista olvashatatlan, a tartományból viszont azonnal látszik, hol szakadt meg.
+    """
+    if not szamok:
+        return ""
+    szamok = sorted(szamok)
+    csoportok, kezd, elozo = [], szamok[0], szamok[0]
+    for n in szamok[1:]:
+        if n == elozo + 1:
+            elozo = n
+            continue
+        csoportok.append((kezd, elozo))
+        kezd = elozo = n
+    csoportok.append((kezd, elozo))
+    reszek = [f"{a}" if a == b else f"{a}-{b}" for a, b in csoportok]
+    if len(reszek) > max_db:
+        marad = len(reszek) - max_db
+        return ", ".join(reszek[:max_db]) + f", … (+{marad} további szakasz)"
+    return ", ".join(reszek)
 
 
 # ------------------------------------------------------------------ átnevezés
@@ -60,23 +102,24 @@ def atnevez(manifest_ut, mappa, szimulacio=False, kezdo=1):
 
     hibak = []
     for i, t in enumerate(tetelek):
-        for kulcs in ("fajl", "datum", "szallito"):
+        for kulcs in ("fajl", "teljesites", "szallito"):
             if not t.get(kulcs):
                 hibak.append(f"[{i}] hiányzó mező: {kulcs}")
-        if t.get("datum") and not _datum_ok(t["datum"]):
-            hibak.append(f"[{i}] rossz dátumformátum: {t['datum']!r} (kell: ÉÉÉÉ-HH-NN)")
+        if t.get("teljesites") and not _datum_ok(t["teljesites"]):
+            hibak.append(f"[{i}] rossz dátumformátum: {t['teljesites']!r} (kell: ÉÉÉÉ-HH-NN)")
         if t.get("fajl") and not os.path.exists(os.path.join(mappa, t["fajl"])):
             hibak.append(f"[{i}] nincs meg a fájl: {t['fajl']}")
     if hibak:
         sys.exit("A manifest hibás, nem nyúlok a fájlokhoz:\n  " + "\n  ".join(hibak))
 
-    # Kelt szerint növekvő; azonos napon a manifest sorrendje dönt (stabil rendezés).
-    tetelek = sorted(tetelek, key=lambda t: t["datum"])
+    # Teljesítés szerint növekvő; azonos napon a manifest sorrendje dönt (stabil
+    # rendezés). A workflow ilyenkor a QUiCK expense id-ja szerint dönt.
+    tetelek = sorted(tetelek, key=lambda t: t["teljesites"])
 
     tervek = []
     for n, t in enumerate(tetelek, start=kezdo):
         ext = os.path.splitext(t["fajl"])[1].lstrip(".") or "pdf"
-        tervek.append((t["fajl"], uj_nev(n, t["datum"], t["szallito"], ext)))
+        tervek.append((t["fajl"], uj_nev(n, t["teljesites"], t["szallito"], ext)))
 
     utkozes = [nev for nev, db in Counter(uj for _, uj in tervek).items() if db > 1]
     if utkozes:
@@ -101,7 +144,7 @@ def _beolvas_mappa(mappa):
             tetelek.append({
                 "fajl": f,
                 "sorszam": int(m.group("sorszam")),
-                "datum": m.group("datum"),
+                "teljesites": m.group("datum"),
                 "szallito": m.group("szallito").replace("_", " "),
             })
         elif os.path.isfile(os.path.join(mappa, f)):
@@ -125,23 +168,25 @@ def ellenoriz(mappa):
 
     hianyzo = sorted(set(range(min(sorszamok), max(sorszamok) + 1)) - set(sorszamok))
     if hianyzo:
-        baj.append(f"Kimaradt sorszám: {hianyzo}")
+        baj.append(f"Kimaradt sorszám ({len(hianyzo)} db): {_tartomanyok(hianyzo)}"
+                   "\n    Hézag jellemzően részlegesen lefutott workflow-t jelent, "
+                   "nem hiányzó számlát.")
     if min(sorszamok) != 1:
         baj.append(f"A számozás nem 1-gyel kezdődik, hanem {min(sorszamok)}-vel")
 
-    # A sorszámnak a kelt szerint növekvőnek kell lennie.
+    # A sorszámnak a teljesítés dátuma szerint növekvőnek kell lennie.
     rendezett = sorted(tetelek, key=lambda t: t["sorszam"])
     for elozo, kovetkezo in zip(rendezett, rendezett[1:]):
-        if kovetkezo["datum"] < elozo["datum"]:
-            baj.append(f"Dátumsorrend törik: {elozo['fajl']} után {kovetkezo['fajl']}")
+        if kovetkezo["teljesites"] < elozo["teljesites"]:
+            baj.append(f"Teljesítés szerinti sorrend törik: {elozo['fajl']} után {kovetkezo['fajl']}")
             break
 
     # Ugyanaz a szállító + ugyanaz a nap többször: lehet jogos (Meta napi számlák),
     # de lehet duplán lementett PDF is - ezért figyelmeztetés, nem hiba.
-    parok = Counter((t["szallito"], t["datum"]) for t in tetelek)
+    parok = Counter((t["szallito"], t["teljesites"]) for t in tetelek)
     gyanus = [f"{sz} — {d} ({db}×)" for (sz, d), db in parok.items() if db > 1]
 
-    honapok = sorted({t["datum"][:7] for t in tetelek})
+    honapok = sorted({t["teljesites"][:7] for t in tetelek})
     print(f"{len(tetelek)} számla | hónap: {', '.join(honapok)} "
           f"| sorszámok: {min(sorszamok):03d}–{max(sorszamok):03d}")
     if len(honapok) > 1:
@@ -157,7 +202,7 @@ def ellenoriz(mappa):
         for b in baj:
             print("  -", b)
         return 1
-    print("\nA köteg rendben: folytonos számozás, dátum szerinti sorrend.")
+    print("\nA köteg rendben: folytonos számozás, teljesítés szerinti sorrend.")
     return 0
 
 
@@ -172,15 +217,15 @@ def osszesito(mappa, csv_ut=None):
     if csv_ut:
         with open(csv_ut, "w", newline="", encoding="utf-8-sig") as f:
             w = csv.writer(f, delimiter=";")
-            w.writerow(["sorszám", "számla kelte", "szállító", "fájlnév"])
+            w.writerow(["sorszám", "teljesítés dátuma", "szállító", "fájlnév"])
             for t in sorted(tetelek, key=lambda t: t["sorszam"]):
-                w.writerow([t["sorszam"], t["datum"], t["szallito"], t["fajl"]])
+                w.writerow([t["sorszam"], t["teljesites"], t["szallito"], t["fajl"]])
         print(f"\nCSV kiírva: {csv_ut}")
 
 
 MANIFEST_MINTA = [
-    {"fajl": "letoltott_szamla_1.pdf", "datum": "2026-08-03", "szallito": "GOOGLE IRELAND LIMITED"},
-    {"fajl": "meta_aug.pdf", "datum": "2026-08-01", "szallito": "Meta Platforms Ireland Limited"},
+    {"fajl": "letoltott_szamla_1.pdf", "teljesites": "2026-08-03", "szallito": "GOOGLE IRELAND LIMITED"},
+    {"fajl": "meta_aug.pdf", "teljesites": "2026-08-01", "szallito": "Meta Platforms Ireland Limited"},
 ]
 
 

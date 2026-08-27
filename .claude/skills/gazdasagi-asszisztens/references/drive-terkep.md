@@ -17,14 +17,18 @@ Ez sokkal megbízhatóbb, mint névre keresni, mert több hasonló nevű mappa i
 | `0Könyvelési anyag` (gyökér) | `1s2wPzRFCf5qbGPZAP-iD8J1Xoak5kqle` |
 | └ `Konyveles 2026-07` | `12GopEsI_hC4u28NKTQt82h17HtWSSnLH` |
 
-A havi mappák neve **ékezet nélkül**: `Konyveles ÉÉÉÉ-HH`. Új hónapnál ugyanezt a
-mintát kövesd, ne írd át „Könyvelés"-re — a meglévő mappa így néz ki.
+A havi mappát a **„Havi könyvelési csomag"** n8n workflow hozza létre és tölti fel a
+QUiCK-ből, minden hónap 3-án (lásd `quick-n8n.md`). A neve **ékezet nélkül**:
+`Konyveles ÉÉÉÉ-HH` — ezt a workflow generálja, ne nevezd át.
 
 ### Fájlnév-konvenció
 
 ```
-{sorszám}_{számla kelte}_{szállító neve}.pdf
+{sorszám}_{teljesítés dátuma}_{szállító neve}.pdf
 ```
+
+A dátum a **teljesítés dátuma** (QUiCK: `fulfilled_at`), nem a számla kelte és nem a
+fizetési határidő. A legtöbb számlánál egybeesnek, ezért könnyű félreérteni.
 
 Példák valós fájlokból:
 
@@ -37,9 +41,10 @@ Példák valós fájlokból:
 
 Amit ezekből tudni kell:
 
-- A sorszám **három számjegy**, `001`-től, a hónapon belül folytonos.
-- A rendezés a **számla kelte** szerint növekvő — nem a letöltés vagy a beérkezés
-  szerint. Egy napon belül a sorrend szabad.
+- A sorszám **három számjegy**, `001`-től, a hónapon belül folytonos. Hézag benne
+  nem hiányzó számlát jelent, hanem részlegesen lefutott workflow-t.
+- A rendezés a **teljesítés dátuma** szerint növekvő; azonos napon belül a QUiCK
+  expense id-ja dönt.
 - A dátum `ÉÉÉÉ-HH-NN`.
 - A szállítónévben a **szóköz aláhúzásra** cserélődik, az **ékezet marad**, a pont és
   a vessző is marad. Ezért lesz `Kft..pdf` — dupla pont, ez így helyes.

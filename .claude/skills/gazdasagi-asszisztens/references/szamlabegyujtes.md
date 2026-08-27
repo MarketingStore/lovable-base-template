@@ -1,143 +1,139 @@
-# Bejövő számlák begyűjtése
+# Bejövő számlák
 
-## Miért ez a nehéz rész
+## A folyamat már automatizált
 
-A szállítói számlák háromféle úton érkeznek:
+A havi könyvelési mappát a **„Havi könyvelési csomag"** n8n workflow állítja elő
+minden hónap 3-án 7:00-kor: a QUiCK-ből letölti az előző hónap teljesítés szerinti
+számlaképeit, sorszámozza, és feltölti a `0Könyvelési anyag/Konyveles ÉÉÉÉ-HH`
+mappába. Részletek: `quick-n8n.md`.
 
-1. **E-mailben** — de nem egy fiókba, hanem többe.
-2. **Belépéssel** — a szolgáltató felületéről kell letölteni (a legtöbb SaaS így megy).
-3. **Kolléganőtől** — amit ő kap meg vagy ő intéz.
+Ebből következik, hogy **a feladat nem a begyűjtés, hanem az ellenőrzés**: a gépi
+köteg teljes-e, és ami hiányzik, az miért hiányzik. A hiány két helyen keletkezhet,
+és a kettőt élesen szét kell választani:
 
-Egyik sem hoz magától teljes listát, és épp ezért a hónap zárásakor a kockázat nem az,
-hogy egy számlát rosszul nevezünk el, hanem hogy **egy számla egyszerűen kimarad**. A
-skill fő haszna itt: van egy várt lista, amihez képest látszik a hiány.
+1. **A tétel nincs benne a QUiCK-ben.** Ez a valódi hiány — a számla nem jutott el a
+   nyilvántartásba. Itt van értelme szállítót keresni, postafiókot nézni, bekérni.
+2. **A QUiCK-ben megvan, de kimaradt a mappából.** Jellemzően azért, mert nincs
+   számlakép (`has_artifact=false`), vagy a workflow részlegesen futott. Ezt nem
+   bekéréssel kell orvosolni, hanem a QUiCK-ben pótolni a képet, vagy újrafuttatni.
 
-## A havi menet
+Ha ezt összekevered, feleslegesen zaklatsz szállítókat olyan számláért, ami rég
+megvan.
 
-**1. Nyisd meg az előző hónapot referenciának.**
+## A havi ellenőrzés menete
 
+**1. Nézd meg, lefutott-e a workflow.** A hónap 3-a után lennie kell friss
+`Konyveles ÉÉÉÉ-HH` mappának. Ha nincs, nézd meg az n8n futástörténetét.
+
+**2. Ellenőrizd a köteg épségét.**
+
+```bash
+python3 scripts/szamla_rendez.py ellenoriz --mappa <havi mappa>
 ```
-parentId = '<0Könyvelési anyag ID>'
+
+Ez elkapja a kimaradt és ismétlődő sorszámot, a teljesítés szerinti sorrend törését,
+a konvención kívüli fájlokat és a hónapkeveredést. **Hézag a számozásban részleges
+futást jelent** — a workflow sorfolytonosan számoz, tehát ha 001–128-ból hiányzik a
+57-es, akkor a letöltés vagy a feltöltés szállt el, nem egy számla hiányzik.
+
+**3. Vesd össze a QUiCK-kel.** A mappa csak azt tartalmazza, aminek van számlaképe.
+A `GET /2/expenses/` ugyanarra a hónapra megadja a teljes listát — a kettő különbsége
+mutatja, hol nincs kép. Ehhez n8n workflow kell (a token nem olvasható ki).
+
+**4. Vesd össze az előző hónappal.**
+
+```bash
+python3 scripts/szamla_rendez.py osszesito --mappa <mappa>
 ```
 
-Az előző havi mappa tartalma a legjobb ellenőrzőlista: ami ott szerepelt, annak
-jellemzően most is jönnie kell. A `scripts/szamla_rendez.py osszesito` parancs
-szállítónkénti bontásban kiírja az előző hónapot — ezt vesd össze az aktuálissal.
+A szállítónkénti bontás mellé tedd az előző hónapét: ami akkor szerepelt és most nem,
+az gyanús. Ez fogja meg azt az esetet, amikor egy visszatérő számla be sem került a
+QUiCK-be. A visszatérő szállítók listája lentebb.
 
-**2. Gyűjtsd össze, ami megvan**, egy munkakönyvtárba.
+**5. Ami tényleg hiányzik**, azt kérd be — és jegyezd fel, honnan jött, hogy legközelebb
+gyorsabb legyen.
 
-**3. Készíts manifestet.** Minden PDF-hez a szállító neve és a **számla kelte** (nem a
-fizetési határidő, nem a letöltés napja):
+## Kézi pótlás
+
+Ha egy számlát kézzel kell a mappába tenni (mert a QUiCK-ben nincs kép, de a PDF
+megvan), akkor a névnek egyeznie kell a gépivel. Manifest, majd szimuláció:
 
 ```json
-[
-  {"fajl": "invoice_2026-08.pdf", "datum": "2026-08-31", "szallito": "GOOGLE IRELAND LIMITED"},
-  {"fajl": "meta.pdf", "datum": "2026-08-01", "szallito": "Meta Platforms Ireland Limited"}
-]
+[{"fajl": "letoltott.pdf", "teljesites": "2026-08-15", "szallito": "GOOGLE IRELAND LIMITED"}]
 ```
-
-A szállító nevét úgy írd, ahogy a **számlán** szerepel, és ahogy az előző hónapban is
-szerepelt — ha egyszer `Starcopy Kft.`, máskor `STARCOPY Kft.`, akkor a szállítónkénti
-összesítő kettőnek látja. (Ez a valós adatokban elő is fordul.)
-
-**4. Nevezd át.** Előbb szimulációval:
 
 ```bash
 python3 scripts/szamla_rendez.py atnevez manifest.json --mappa <mappa> --szimulacio
-python3 scripts/szamla_rendez.py atnevez manifest.json --mappa <mappa>
 ```
 
-**5. Ellenőrizd a köteget.**
+A `teljesites` a **teljesítés dátuma**, nem a számla kelte. A szállító nevét úgy írd,
+ahogy a QUiCK-ben a `partner_name` szerepel — a névtisztítást a szkript végzi, és
+bitre ugyanúgy, mint a workflow.
 
-```bash
-python3 scripts/szamla_rendez.py ellenoriz --mappa <mappa>
-```
-
-Ez elkapja a kimaradt és ismétlődő sorszámot, a dátumsorrend törését, a konvenciótól
-eltérő fájlneveket és azt, ha két hónap keveredik egy mappában.
-
-**6. Vesd össze a várt listával** (lentebb), és sorold fel, mi hiányzik — kitől,
-melyik csatornán kell bekérni.
-
-**7. Töltsd fel a havi Drive-mappába**, és szólj, ha kész.
+Figyelem: az `atnevez` 001-től újraszámoz. Meglévő köteg közepére beszúráshoz vagy az
+egész mappát add meg neki, vagy a `--kezdo` kapcsolóval folytatólagos sorszámot adj —
+és utána mindig futtass `ellenoriz`-t.
 
 ## Visszatérő szállítók
 
-A lista a 2026. júliusi köteg (128 számla) alapján készült. A **„honnan"** oszlop
-részben következtetés a szállító jellegéből — ahol `?` van, ott erősítsd meg, és írd
-át. Ez a fájl a skill memóriája: minden hónapban pontosabb lehet.
+A lista a 2026. júliusi köteg (128 számla) alapján készült. **Ellenőrzőlistának való**,
+nem beszerzési útmutatónak: a számlák a QUiCK-be érkeznek, nem neked kell begyűjteni
+őket. Az a haszna, hogy egy hiányzó visszatérő szállító feltűnjön.
 
 ### Havi fix, szinte biztosan jön
 
-| Szállító | Jelleg | Honnan |
-|---|---|---|
-| Meta Platforms Ireland Limited | ad spend | belépés (Meta Billing) |
-| GOOGLE IRELAND LIMITED | ad spend | belépés (Google Ads) |
-| Magyar Telekom Nyrt. | telefon/net | ? |
-| One Magyarország Zrt. | telefon | ? |
-| MBH Bank Nyrt. | bank | ? |
-| MERKANTIL BANK Zrt. | lízing | ? |
-| Generali Biztosító Zrt. | biztosítás | ? |
-| Groupama Biztosító Zrt. | biztosítás | ? |
-| MetLife | biztosítás | ? |
-| MAGYAR POSTA Zrt. | posta | ? |
-| ALH Consulting Kft. | ? | ? |
-| Magnus Balance Kft. | ? | ? |
+Meta Platforms Ireland Limited · GOOGLE IRELAND LIMITED · Magyar Telekom Nyrt. ·
+One Magyarország Zrt. · MBH Bank Nyrt. · MERKANTIL BANK Zrt. · Generali Biztosító Zrt. ·
+Groupama Biztosító Zrt. · MetLife · MAGYAR POSTA Zrt. · ALH Consulting Kft. ·
+Magnus Balance Kft.
 
-**Figyelem a Meta és a Google esetében:** ezekből havonta **több** számla is jön
-(júliusban a Metából 10+, a Google-ből 5). Nem elég egyet letölteni — a hónap összes
-számláját le kell szedni, és ezek gyakran ügyfelenkénti bontásban vannak, ami a
-továbbszámlázáshoz kell.
+**A Meta és a Google esetében havonta több számla van** — júliusban a Metából 10+, a
+Google-ből 5. Ha az összesítőben ezekből feltűnően kevés szerepel, az jelzés. A
+továbbszámlázáshoz ráadásul hirdetési fiók szerinti bontás kell.
 
-### SaaS / előfizetés — belépéssel tölthető
-
-Ezeknél jellemzően jön e-mail értesítő is, de a PDF a fiókból tölthető le:
+### SaaS / előfizetés
 
 Adobe Systems Software Ireland Ltd · Canva Pro · Claude.ai · OpenAI, LLC ·
-ElevenLabs · HeyGen Technology Inc. · Semrush Inc. · Similarweb UK Ltd. ·
-Mangools · SEOPTIMER PTE. LTD. · Metricool · Swydo · MailerLite Ltd. ·
-Manychat · Mailgun Technologies · Resend · Zapier Inc. · Lovable ·
-Laravel Holdings Inc. · Neon Inc. · Usercentrics A/S · Omneky Inc. ·
-Paddle.com Market Ltd · DotRoll Kft. · Riport Applications Kft. ·
-Indepsale Technology Ltd. · Perx Plus Kft. · Cloud Tender Kft. · Fluid Digital Kft.
+ElevenLabs · HeyGen Technology Inc. · Semrush Inc. · Similarweb UK Ltd. · Mangools ·
+SEOPTIMER PTE. LTD. · Metricool · Swydo · MailerLite Ltd. · Manychat ·
+Mailgun Technologies · Resend · Zapier Inc. · Lovable · Laravel Holdings Inc. ·
+Neon Inc. · Usercentrics A/S · Omneky Inc. · Paddle.com Market Ltd · DotRoll Kft. ·
+Riport Applications Kft. · Indepsale Technology Ltd. · Perx Plus Kft. ·
+Cloud Tender Kft. · Fluid Digital Kft.
 
-A `Paddle.com Market Ltd` több kisebb SaaS viszonteladója — ott a Paddle a számlakibocsátó,
-a mögötte lévő szolgáltatás a számlán szerepel.
+A `Paddle.com Market Ltd` több kisebb SaaS viszonteladója — a mögöttes szolgáltatás a
+számlán szerepel. A `Riport Applications Kft.` maga a QUiCK szállítója.
 
-### Nyomda, kreatív, eszköz — jellemzően e-mailben
+### Nyomda, kreatív, eszköz
 
 INNOVARIANT KFT. · Rapidnyomda.hu Kft. · PRINTDEKOR Kft. · Starcopy Kft. ·
 PRINTKER OFFICE LAND · Papír City Kft. · REKLÁMAJÁNDÉK.HU Kft. ·
-I.T. Magyar Cinema Kft. · Sil Design Kft. · Indico Design Kft. ·
-Mediamotion Kft. · DPK Marketing Kft. · DOmarketing Kft. ·
-Szűcs Network Hungary Kft. · IRODA TEAM Kft. · Gifie Kft. · Green Touch ·
-Electroboss · Ravex Group · RKP Kft. · FoxPost Kft. · SUTI PARK Bt. ·
-Meszlényi-Autó Kft. · Carassist Hungary Kft. · MELÓ-DIÁK Dél Iskolaszövetkezet
+I.T. Magyar Cinema Kft. · Sil Design Kft. · Indico Design Kft. · Mediamotion Kft. ·
+DPK Marketing Kft. · DOmarketing Kft. · Szűcs Network Hungary Kft. · IRODA TEAM Kft. ·
+Gifie Kft. · Green Touch · Electroboss · Ravex Group · RKP Kft. · FoxPost Kft. ·
+SUTI PARK Bt. · Meszlényi-Autó Kft. · Carassist Hungary Kft. ·
+MELÓ-DIÁK Dél Iskolaszövetkezet
 
 ### Egyéni vállalkozók és magánszemélyek
-
-Ezeknél fordul elő a legtöbb csúszás — gyakran emlékeztetni kell őket:
 
 Györkös Balázs e.v. (6143550) · T. Szabó Anikó e.v. · Bakacsi Miklós (39177488) ·
 Balázs Tibor (57861595) · Bihari Miklós (32404094) · Soti Julianna ·
 TEMESVÁRI ZOLTÁN PÉTER
 
-Az e.v.-k jellemzően **alanyi adómentesek** — a számlán nincs áfa. Ez a TIG-nél is
-számít (`afa: "AAM"`).
+Itt csúszik a legtöbb számla. Jellemzően **alanyi adómentesek** — nincs áfa. Ez a
+TIG-nél is számít (`afa: "AAM"`).
 
 ### Külföldi
 
 Lindt s.r.o. · Euroko s.r.o. · TEAMWORK CREW LIMITED
 
-Ezeknél fordított adózás / közösségi beszerzés lehet — a könyvelőnek jelezni kell,
-ha új ilyen partner lép be.
+Fordított adózás / közösségi beszerzés lehet — új ilyen partnernél szólj a könyvelőnek.
 
 ## Mikor van kész
 
-- [ ] Minden várt szállító számlája megvan, vagy tudod, miért nincs
-- [ ] `ellenoriz` hibátlanul lefut
-- [ ] A számozás `001`-től folytonos, dátum szerint növekvő
-- [ ] Egy hónap van a mappában
-- [ ] A Meta / Google számlák **mind** megvannak, nem csak egy-egy
+- [ ] A workflow lefutott, van friss havi mappa
+- [ ] `ellenoriz` hibátlan — folytonos számozás, teljesítés szerinti sorrend
+- [ ] A mappa és a QUiCK havi listája között nincs megmagyarázatlan eltérés
+- [ ] Az előző hónaphoz képest nem tűnt el visszatérő szállító
+- [ ] A Meta / Google számlák mennyisége nem gyanúsan kevés
 - [ ] A továbbszámlázandó tételek azonosítva (lásd `szamlazas.md`)
-- [ ] Feltöltve a `Konyveles ÉÉÉÉ-HH` mappába
