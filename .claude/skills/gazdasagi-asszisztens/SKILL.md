@@ -1,21 +1,19 @@
 ---
 name: gazdasagi-asszisztens
 description: |
-  Használd ezt a skillt minden Marketing Store-os gazdasági / pénzügyi adminisztrációs
-  feladatnál: bejövő (szállítói) számlák begyűjtése és rendszerezése a havi könyvelési
-  mappába, TIG-ek (teljesítésigazolások) elkészítése, és a kimenő számlázás előkészítése
-  a Számlázz.hu-hoz. AKKOR IS ezt használd, ha a kérés a QUiCK-et (Riport Applications)
-  vagy az azt hívó n8n workflow-kat érinti — a szállítói számlák nyilvántartása ott van,
-  és a havi könyvelési csomagot onnan tölti le egy workflow. Trigger kifejezések:
-  'számlák', 'számlázás', 'számlagyűjtés', 'QUiCK', 'költségszámla', 'szállítói számla',
-  'könyvelési anyag', 'havi zárás', 'lekönyvelendő', 'TIG', 'teljesítésigazolás',
-  'teljesítés igazolás', 'kiállítható a számla', 'mit kell még bekérni', 'megvan-e minden
-  számla', 'továbbszámlázás', 'ad spend elszámolás', 'küldjük a könyvelőnek'. AKKOR IS
-  használd, ha a kérés csak közvetve érinti ezeket — pl. 'zárjuk le a hónapot', 'mi
-  hiányzik még', 'készítsd elő a hónap végét', 'mennyit számlázunk X-nek' —, mert a
-  havi zárás három szála (számlabegyűjtés, TIG, számlázás) összefügg, és külön-külön
-  kezelve pont az marad ki, ami átcsúszik köztük. NE használd sima könyvelési
-  elméleti kérdésre, adótanácsadásra, vagy más ügyfél kreatív munkájára.
+  Marketing Store gazdasági adminisztráció: szállítói számlák ellenőrzése a havi
+  könyvelési mappában, TIG-ek (teljesítésigazolások) készítése, és a kimenő számlázás
+  előkészítése a Számlázz.hu-hoz. A szállítói számlák nyilvántartása a QUiCK-ben
+  (Riport Applications) van, onnan tölti le a havi csomagot egy n8n workflow — a
+  QUiCK-et vagy azt hívó workflow-t érintő kérésnél is ezt használd. Trigger:
+  'számlák', 'számlázás', 'QUiCK', 'szállítói számla', 'költségszámla', 'könyvelési
+  anyag', 'havi zárás', 'lekönyvelendő', 'TIG', 'teljesítésigazolás', 'kiállítható a
+  számla', 'megvan-e minden számla', 'mit kell még bekérni', 'továbbszámlázás', 'ad
+  spend elszámolás', 'küldjük a könyvelőnek'. AKKOR IS használd, ha a kérés csak
+  közvetve érinti — pl. 'zárjuk le a hónapot', 'mi hiányzik még', 'mennyit számlázunk
+  X-nek' —, mert a havi zárás három szála összefügg, és külön kezelve pont az marad
+  ki, ami átcsúszik köztük. NE használd könyvelési elméleti kérdésre, adótanácsadásra
+  vagy más ügyfél kreatív munkájára.
 ---
 
 # Gazdasági asszisztens
