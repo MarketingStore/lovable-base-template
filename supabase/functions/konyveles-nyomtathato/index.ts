@@ -11,7 +11,7 @@
 // ha az egyiket módosítod, a másikat is kell.
 //
 // Kérés:
-//   POST, fejléc: x-api-key: <N8N_API_KEY>
+//   POST, fejléc: x-api-key: <N8N_BRIDGE_API_KEY>
 //   { "fajlok": [ { "nev": "001_2026-07-02_Partner.pdf", "url": "https://..." } ],
 //     "tomor": false }
 //
@@ -20,10 +20,14 @@
 //
 // A `tomor: true` elhagyja az üres oldalakat: kevesebb papír, de egy lapra két
 // különböző számla is kerülhet.
+//
+// Telepítve: MS-E APP Supabase projekt, verify_jwt = false.
+// URL: https://ivwocffbjosrnwratmel.supabase.co/functions/v1/konyveles-nyomtathato
 
 import { PDFDocument } from 'https://esm.sh/pdf-lib@1.17.1';
 
-const KULCS = Deno.env.get('N8N_API_KEY') ?? '';
+// Ugyanaz a titok, mint az n8n-gazdasag-bridge-nél — szándékosan nincs külön kulcs.
+const KULCS = Deno.env.get('N8N_BRIDGE_API_KEY') ?? '';
 
 const PARHUZAM = 8;              // egyszerre ennyi letöltés
 const MAX_FAJL = 500;
@@ -58,7 +62,7 @@ Deno.serve(async (req: Request) => {
     return valasz({ hiba: 'Csak POST kérést fogad.' }, 405);
   }
   if (!KULCS) {
-    return valasz({ hiba: 'Az N8N_API_KEY nincs beállítva a függvényen.' }, 500);
+    return valasz({ hiba: 'Az N8N_BRIDGE_API_KEY nincs beállítva a függvényen.' }, 500);
   }
   if (req.headers.get('x-api-key') !== KULCS) {
     return valasz({ hiba: 'Érvénytelen vagy hiányzó x-api-key.' }, 401);

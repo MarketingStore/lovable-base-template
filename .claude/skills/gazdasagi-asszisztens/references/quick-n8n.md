@@ -536,6 +536,11 @@ olvas, a Code node pedig az n8n Cloudon nem enged külső könyvtárat. Ezért a
 mappa egyetlen nyomtatható PDF-jét egy Supabase edge function állítja elő:
 **`konyveles-nyomtathato`** (forrás: `supabase/functions/konyveles-nyomtathato/`).
 
+URL: `https://ivwocffbjosrnwratmel.supabase.co/functions/v1/konyveles-nyomtathato`,
+`verify_jwt = false`. A titok **ugyanaz, mint a bridge-é** (`N8N_BRIDGE_API_KEY`) —
+szándékosan nincs külön kulcs, tehát az n8n ugyanazt a „Supabase Bridge" credentialt
+használja mindkét végponthoz.
+
 Kérés: `POST`, `x-api-key` fejléc, törzs
 `{ "fajlok": [{ "nev": "...", "url": "<QUiCK aláírt link>" }], "tomor": false }`.
 Válasz: maga a PDF, a számok fejlécben (`x-tetel`, `x-oldal`, `x-iv`,
