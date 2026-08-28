@@ -134,18 +134,26 @@ Két indítója van: **`Ho 3-an 7:00`** (havonta, 3-án 07:00) és **`Kezi indit
 Mindkettő ugyanoda fut be, tehát kézzel bármikor újrafuttatható — de lásd lentebb,
 hogy ennek van egy csapdája.
 
-A lánc: `Elozo honap` → `Mappa letrehozasa` → `Honap tetelei` →
-`Sorrend es azonositok` → `Letoltesi linkek` → `Parositas` →
-`Szamlakep letoltese` → `Feltoltes Drive-ra`.
+A lánc: `Elozo honap` → `Mappa kereses` → `Mappa dontes` → `Van mar mappa?` →
+(igen: `Celmappa` / nem: `Mappa letrehozasa` → `Celmappa`) → `Meglevo fajlok` →
+`Honap tetelei` → `Sorrend es azonositok` → `Letoltesi linkek` → `Parositas` →
+`Szamlakep letoltese` → `Feltoltes Drive-ra`, plusz a `Sorrend es azonositok`
+második kimenetéről `Osszegzes` → `Osszegzo email`.
 
 1. **`Elozo honap`** — kiszámolja az előző hónap tartományát a *futtatás napjából*:
    `new Date(év, hónap, 0)` az előző hónap utolsó napja, `new Date(év, hónap-1, 1)`
    az elseje. A `cimke` mező (`2026-08`) megy a mappanévbe. Nincs paraméterezve:
    **mindig az előző hónapot csinálja**, tehát egy elmaradt hónapot kézi futtatással
    nem lehet pótolni, csak a kód átírásával.
-2. **`Mappa letrehozasa`** — létrehozza a `Konyveles {cimke}` mappát a
-   `1s2wPzRFCf5qbGPZAP-iD8J1Xoak5kqle` (`0Könyvelési anyag`) alatt, a
-   „Board tárhely - H" Drive-fiók My Drive-jában. `executeOnce`.
+2. **`Mappa kereses` → `Mappa dontes` → `Van mar mappa?` → `Celmappa`** — megkeresi,
+   van-e már `Konyveles {cimke}` mappa a `1s2wPzRFCf5qbGPZAP-iD8J1Xoak5kqle`
+   (`0Könyvelési anyag`) alatt. Ha van, azt használja; ha nincs, a
+   `Mappa letrehozasa` készít egyet. A Drive megengedi az azonos nevet, ezért a
+   korábbi, feltétel nélküli létrehozás egy újrafuttatásnál második, ugyanolyan nevű
+   mappát csinált volna.
+2b. **`Meglevo fajlok`** — kilistázza a célmappában már bent lévő fájlneveket a Drive
+   API-ról. Ezeket a `Parositas` kihagyja, tehát az újrafuttatás nem duplikál, hanem
+   pótol. (Azért közvetlen API-hívás és nem a Drive node, mert az csak névre keres.)
 3. **`Honap tetelei`** — `GET /2/expenses/`, `date_field=fulfilled_at`, a hónap
    tartományára, `ordering=fulfilled_at`, `page_size=200`, lapozás a `body.next`
    alapján, **maximum 10 oldal** (300 ms szünettel). `executeOnce`.
@@ -164,17 +172,27 @@ A lánc: `Elozo honap` → `Mappa letrehozasa` → `Honap tetelei` →
 
 ### Amit a havi csomagnál tudni kell
 
-- **Kézi újrafuttatás duplikált mappát csinál.** A `Mappa letrehozasa` feltétel nélkül
-  hoz létre mappát, a Drive pedig megengedi az azonos nevet. Egy második futás tehát
-  nem a meglévő mappát tölti fel újra, hanem egy **második, ugyanolyan nevű mappát**
-  készít, és oda tölt. Ha újra kell futtatni, előbb nevezd át vagy töröld a meglévőt.
-- **A sorszám a hézag forrása.** A számozás a 4. lépésben dől el, az URL-ek lekérése
-  *előtt*. Ha egy tételhez nem jön vissza letöltési link, az a sorszám kimarad, és a
-  mappában hézag lesz (001, 002, 004…). Pont ezt kapja el a
-  `szamla_rendez.py ellenoriz` — a hézag nem kozmetikai hiba, hanem hiányzó számla.
-- **Nincs visszajelzés.** A workflow az utolsó feltöltés után véget ér: nem küld
-  levelet, nem ír összesítőt, és **nincs beállítva error workflow** sem. Ha félúton
-  elszáll, arról magától senki nem értesül. Ezért kell a futás után ellenőrizni.
+- **A sorszám és a hézag.** A számozás a `has_artifact` szűrés UTÁN, de az URL-ek
+  lekérése ELŐTT dől el. Ebből két külön eset következik, és más a teendő:
+  - amihez eleve nincs számlakép, az **nem is kap sorszámot** — nem hézagot csinál,
+    hanem egyszerűen nincs a csomagban. A képet a QUiCK-ben kell pótolni;
+  - amiről a QUiCK azt mondta, van képe, de letöltési linket mégsem adott, az
+    **kihagyott sorszámot** hagy (001, 002, 004…). Ezt kapja el a
+    `szamla_rendez.py ellenoriz`, és ezt listázza az összegző levél is.
+- **A számozás elcsúszhat két futás között.** A sorszám a hónap teljes, teljesítés
+  szerint rendezett listájából jön. Ha utólag kerül be egy számla korábbi teljesítési
+  dátummal, tőle kezdve minden sorszám arrébb csúszik, tehát **az összes fájlnév
+  megváltozik**. A workflow ilyenkor szándékosan nem tölt fel semmit, hanem jelez —
+  különben a régi fájlok mellé kerülne egy eltolt nevű, teljes második készlet.
+  Ilyenkor a mappát ki kell üríteni és újra kell futtatni.
+- **A 3-a után rögzített számla kimarad.** Ez nem elméleti: 2026 augusztus végén a
+  júliusi csomagból **öt számla hiányzott**, mind augusztus 3. után került a QUiCK-be
+  (FHU Kamil Grzonkowski 07-05, Interhurt 07-06, Debreceni Campus 07-15 és 07-26,
+  PRINTDEKOR 07-30). Érdemes a hónap közepén egyszer újrafuttatni.
+- **10 oldal = 2000 tétel a plafon.** Túllépésnél csendben csonkulna, ezért az
+  összegzés külön jelzi, ha a lekérés elérte a korlátot.
+- **Error workflow továbbra sincs beállítva.** Az összegző levél a sikeres futás
+  végén megy ki; ha a workflow félúton elszáll, arról ez sem szól.
 - **`has_artifact=false` némán kimarad** — a tétel a QUiCK-ben ott van, csak kép nincs
   hozzá. Ez nem a szállítón múlik, tehát nem bekérni kell, hanem a képet pótolni.
 - **10 oldal = 2000 tétel a plafon.** Jelenleg bőven elég, de túllépésnél csendben
