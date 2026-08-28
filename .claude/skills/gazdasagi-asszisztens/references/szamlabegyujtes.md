@@ -104,7 +104,24 @@ hónap zárását — és a PDF bankszámlakivonat erre nem jó, mert nem gépi 
 időszakot az XML-ből olvassuk, és bankszámlánként mindig a legfrissebb kivonat számít,
 a régiek bent maradhatnak. A riport tehát annyit lát, amennyit legutóbb letöltöttél —
 ezért van a levél tárgyában a dátumtartomány, a fejlécében pedig a felhasznált fájlok
-neve.
+neve. Ha a kivonat záró dátuma 3 napnál régebbi, a tárgy **`[ELAVULT KIVONAT]`**
+előtaggal megy ki.
+
+**Mikor kell letölteni.** A workflow 1-jén és 15-én 8:00-kor fut, tehát a fájlnak
+addigra a mappában kell lennie. A kettőnek más a szerepe, és ebből jön az időzítés:
+
+| Futás | Mire jó | Mikor töltsd le |
+|---|---|---|
+| 1-jén 8:00 | az előző hónap zárása, a könyvelőnek | **a hónap utolsó napján**, este |
+| 15-én 8:00 | korai jelzés, még van idő bekérni | 14-én vagy 15-én reggel 8 előtt |
+
+Az 1-jei futásnál a hónap utolsó napja a lényeg: a letöltött számlatörténet a
+**tárgyhó elejétől a letöltés pillanatáig** tart (a 2026-08-28-i letöltés
+`2026-08-01 … 2026-08-28` volt). Ha tehát 1-jén töltenéd le, a fájl a *nyitó* napról
+szólna, és az egész előző hónap kimaradna — hacsak az exportnál kézzel át nem
+állítod a dátumtartományt az előző hónapra. A hónap utolsó napján letölteni
+egyszerűbb, és a néhány napja indított kártyás terheléseket is hozza, mert azok
+függő (`PDNG`) tételként már benne vannak.
 
 Kézzel, soron kívül ugyanez:
 
