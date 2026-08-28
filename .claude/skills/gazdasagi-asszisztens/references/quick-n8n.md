@@ -560,7 +560,31 @@ Drive-hozzáférés, és ugyanabból a forrásból veszi a fájlokat, mint a hav
 A típust a tartalom első bájtjaiból ismeri fel (`%PDF`, PNG, JPEG), nem a névből:
 az aláírt link nem mindig árulja el a kiterjesztést.
 
-Korlátok: 500 fájl, 120 MB összméret, 8 párhuzamos letöltés.
+**Memóriakorlát — ezt méréssel tudjuk.** A Supabase edge function worker véges
+memóriát kap. Éles adaton (2026 július, 133 számla): **80 tétel hibátlanul lefut
+~9 másodperc alatt, 133 viszont `WORKER_RESOURCE_LIMIT` hibát ad**, kétszer is,
+tehát nem hidegindítás. Ezért a függvény nem tölti előre az összes fájlt a
+memóriába, hanem legfeljebb 6 elemű előretöltő ablakkal halad, és a feldolgozott
+elemet azonnal elengedi.
+
+Ha egyszer mégis kevés lenne, a `resz: { tol, ig }` mezővel az n8n oldaláról
+darabolható a függvény módosítása nélkül — ilyenkor több részfájl készül.
+
+Korlátok: 500 fájl, 120 MB összméret, 6 párhuzamos letöltés.
+
+**Az n8n oldali bekötés** a „Havi könyvelési csomag" workflow-ban:
+`Sorrend es azonositok` **harmadik** kimenetéről indul a `Nyomtathato lista` →
+`Nyomtathato PDF` → `Nyomtathato feltoltes` lánc. Azért a harmadikról, mert az n8n
+v1 mélységi sorrendje szerint így a feltöltés és az összegző levél **után** fut:
+ha az edge function elszáll, a levél már kiment, a hibariasztás pedig megszólal.
+
+A `Nyomtathato lista` **nem** a `Parositas` kimenetét használja, hanem a linkeket a
+`Letoltesi linkek` node-ról olvassa vissza: a nyomtatható csomagba a hónap minden
+számlája kell, nem csak az, ami még hiányzott a mappából.
+
+A feltöltött fájl nevében ott a futás dátuma (`Konyveles 2026-07 nyomtathato
+(2026-09-01).pdf`), tehát egy későbbi, pótló futás nem írja felül a korábbit, hanem
+mellé kerül — így látszik, melyik a frissebb.
 
 ## Ha új workflow-t építesz
 
