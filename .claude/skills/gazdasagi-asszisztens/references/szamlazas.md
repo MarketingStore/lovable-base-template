@@ -96,3 +96,14 @@ Ezeket mindig kérdezd meg, ne vezesd le:
 - Van-e az adott hónapban megtakarítás-felhasználás, és mennyi
 - Új ügyfél vagy megszűnt együttműködés
 - Egyedi fizetési határidő vagy áfakulcs
+
+## A QUiCK-beli bevételtípus kitöltése
+
+Kimenő számla rögzítésekor a QUiCK-ben a tételre rá kell tenni a **bevételtípust**:
+`Havidíj` vagy `Projekt bevétel`. Ez nem adminisztratív formaság — a Gazdaság
+dashboard ebből vetíti előre a következő 30 nap várható havidíj-bevételét. Ha üresen
+marad, a számla **csendben kimarad** a cashflow-előrejelzésből, és a hónap alulterve-
+zettnek látszik. A dashboard „Kategorizálandó tételek" riasztása mutatja, min hiányzik.
+
+Ugyanez igaz a projektcímkére (`simple_tags`): anélkül a tétel a havi
+projekteredményből marad ki.

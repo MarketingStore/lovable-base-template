@@ -61,6 +61,12 @@ A QUiCK API-t **csak n8n-en keresztül** lehet hívni: a token az n8n credential
 („Quick API token"), és az n8n soha nem adja ki a titkos mezőket. Adatlekéréshez tehát
 workflow-t futtatsz vagy építesz.
 
+A napi pénzügyi pozíció (egyenlegek, kintlévőség, szállítói tartozás, bér- és
+adókötelezettségek) a **Gazdaság dashboardon** nézhető meg — MS-E APP,
+`/admin/gazdasag/napi`, csak adminnak. A reggeli levél ide linkel; a mögötte lévő
+adatot a „Napi pénzügyi pozíció" workflow írja a Supabase-be. Részletek:
+`references/quick-n8n.md`.
+
 ## A három szál
 
 ### 1. Bejövő számlák

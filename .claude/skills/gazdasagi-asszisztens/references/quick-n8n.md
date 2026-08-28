@@ -49,12 +49,74 @@ közvetlenül letölthető (aláírt link, nem kell hozzá újra a token).
 
 Figyelem a verziószámra: a listázás `/2/`, az artifact `/1/` alatt van.
 
+**`GET /1/pulse/`** — napi pénzügyi pillanatkép
+
+A napi pozíció fő forrása. Bankszámlánként adja az egyenleget (`bank_accounts[]`),
+továbbá a kintlévőséget és a szállítói tartozást. **Számlánként külön kell nézni** —
+összesített egyenleg félrevezető, mert a két számla nem egyformán szabad felhasználású.
+
+**`GET /1/incomes/`** — kimenő (bevételi) számlák, ugyanazzal a lapozással.
+
+**`GET /2/monthly-salaries/`** — havi bérek
+
+Mezők: `month`, `amount`, `paid_status`, `due_at`. Itt a `due_at` **létezik**, tehát az
+esedékesség a forrásból jön.
+
+**`revenue_type`: a bevétel típusa.** Az `incomes[].assignments[]` elemeken van egy
+`revenue_type` mező, két értékkel: **Havidíj** (`10305`) és **Projekt bevétel**
+(`10304`). Ez a legfontosabb szűrő a bevételtervezéshez, mert **partnerszinten nem
+látszik a különbség**: a CSL Plasma összforgalma 54%-ot ingadozik hónapról hónapra, de
+a havidíj része (4 368 800) hat hónapon át fillérre azonos — a szórást a
+projektszámlák okozzák. Ugyanez a Beta Hungarynál: 95% összforgalmi ingadozás, 0%
+havidíjban.
+
+**A mező csak akkor ér valamit, ha ki van töltve.** 2026 augusztusában két hétig
+üresen maradt az újonnan rögzített számlákon (a `simple_tags` szintén) — ezt a
+dashboard „Kategorizálandó tételek" riasztása jelzi. Ha a `revenue_type` hiányzik, a
+számla kimarad a havidíj-előrejelzésből, csendben.
+
+**Áfa: nincs végpont.** Végigpróbálva `/1/vat/`, `/2/vat/`, `/1/vats/`, `/2/vats/`,
+`/2/monthly-vats/`, `/1/monthly-vat/`, `/1/vat-declarations/`,
+`/2/monthly-vat-declarations/`, `/1/taxes/`, `/2/taxes/`, `/1/obligations/`,
+`/1/cashflow/`, `/1/summary/`, `/1/reports/` — **mind 404**. A QUiCK webes Pulzus
+képernyője máshonnan veszi, mint amit az API kiad. Az áfát ezért a **számlák
+tételszintű adatából** számoljuk: minden `assignments[]` elemen ott a `net_amount`,
+`vat`, `vat_amount` és `gross_amount`, a számlán pedig a `vat_area`.
+
+> havi áfa = Σ kimenő számlák `vat_amount` − Σ bejövő számlák `vat_amount`,
+> teljesítés (`fulfilled_at`) szerint, **esedékesség a következő hónap 20-a**
+
+Két dolgot kell tudni róla. A `vat_area != "HU"` tételek fordított adózásúak (Meta,
+Google Ireland, Adobe stb.) — a bevallásban fizetendőként és levonhatóként is
+szerepelnek, tehát az egyenlegre nincs hatásuk. És a **tárgyhavi szám menet közben
+van**: a szállítói számlák utólag érkeznek, ezért a levonható oldal még nőni fog, a
+becsült áfa pedig csökkenni — vagyis felfelé torzít. Ez nem helyettesíti a bevallást:
+nem kezeli a részlegesen levonható tételeket, az arányosítást és a különleges eseteket.
+
+**Figyelem: ezt a „Napi pénzügyi pozíció" workflow már kiszámolja** (`adat.idoszaki`,
+`k: "ÁFA"`). Ha áfára van szükséged, onnan vedd — ne számold újra. Két párhuzamos
+számítás előbb-utóbb elcsúszik, és a dashboard két helyen mondana mást ugyanarról.
+
+**`GET /2/monthly-taxes/`** — havi közterhek
+
+Mezők: `month`, `amount`, `paid_status` — **`due_at` nincs**. Két csapda van benne:
+
+1. A `month` a **fizetés** hónapja, nem a tárgyhó. A `2026-08-01` sor a **júliusi**
+   bérek közterhe, amit **augusztus 12-ig** kell kifizetni. Az esedékesség tehát
+   ugyanannak a hónapnak a 12-e. (Ezt korábban egy hónappal elcsúsztatva számoltuk,
+   és emiatt hiányzott egy 3,3 M Ft-os tétel a 30 napos kötelezettségből.)
+2. A tárgyhavi bér- és adósor gyakran **még nem létezik**: augusztus végén a júliusi
+   bér már kifizetve, az augusztusi még nincs rögzítve. Pótlás nélkül a szeptemberi
+   ~5,4 M Ft-os kifizetés láthatatlan maradna. Ezért a korábbi hónapok átlagából
+   becsüljük — a becsült sorokat mindig **jelölni kell** (`becsult: true`), és a hónap
+   elején, amikor jön a bérszámfejtés tényadata, felülírja őket a valós sor.
+
 ## A négy meglévő workflow
 
 | Név | ID | Állapot | Ütemezés |
 |---|---|---|---|
 | Havi könyvelési csomag | `KjnN4YdHTM1fqwxs` | aktív | 3-án 7:00 |
-| Fizetendő számlák listája | `fnBQVW5vfmOlCg0f` | aktív | hetente 2× |
+| Napi pénzügyi pozíció | `fnBQVW5vfmOlCg0f` | aktív | naponta 7:30 |
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
 | QUiCK API felderítés | `0wPY8RdQvAF0iETH` | inaktív | kézi |
 
@@ -88,6 +150,53 @@ ne térjen el a gépitől.
 nem a fizetési határidő. Ez könnyen félreérthető, mert a legtöbb számlánál a kettő
 egybeesik — de nem mindig.
 
+### Napi pénzügyi pozíció — mit csinál pontosan
+
+Ez a workflow adja a Gazdaság dashboardot és a reggeli levelet. Régen csak egy
+számlalistát küldött — a neve és a leírása sokáig ezt őrizte, ezért ha valahol még
+„Fizetendő számlák listája"-ként szerepel, ugyanerről a workflow-ról van szó.
+
+Lánc: `Napi 7:30` → `Egyenlegek` → `Kintlevoseg` → `Kategorizalando` → `Berek` →
+`Adok` → `Osszes bevetel` → `Kifizetetlen szamlak` → `Lista osszeallitasa` →
+`Ber es ado kotelezettsegek` → (`Ertesito email`, `Pillanatkep mentes`).
+
+- **`Lista osszeallitasa`** — összerakja a strukturált `adat` pillanatképet és egy
+  **rövid** vezetői levelet, benne a CTA-gombbal a dashboardra:
+  `https://marketing-store-e-app.lovable.app/admin/gazdasag/napi`
+- **`Ber es ado kotelezettsegek`** — külön node, mert a bér és a közteher a QUiCK-ben
+  nem számlaként szerepel, így a számla-logikából kimaradna — pedig ez a cég legnagyobb
+  kiadási tétele. Itt él a fenti két csapda kezelése (12-i esedékesség, 3 havi átlagos
+  becslés). A becsült tételek **szándékosan nem módosítják** a `pozicio.pozicio`
+  értéket, hogy az összevethető maradjon a korábbi napokkal — külön mezőben jönnek
+  (`kotelezettseg_30nap`, `pozicio_kotelezettseggel`), 30 napos ablakkal, hogy a levél
+  és a dashboard ugyanazt a számot mondja.
+- **`Havidij elorejelzes`** — a még ki nem állított havidíjakat vetíti előre, hogy a
+  cashflow ne csak a kötelezettségeket lássa előre, hanem a fedezetüket is. Az
+  `Osszes bevetel` node adatából dolgozik (ezért lett annak ablaka 2-ről 4 hónapra
+  szélesítve), és **mediánt** használ, nem átlagot — indoklás lentebb.
+  Az áfa itt nem újraszámolás: az `adat.idoszaki` ÁFA-sorát dátumozza a következő
+  hónap 20-ára, hogy a kötelezettség és az időszaki kép ne mondhasson mást.
+- **`Pillanatkep mentes`** — POST a `n8n-gazdasag-bridge` edge functionre
+  (`x-api-key`, credential „Supabase Bridge"), ez írja a `penzugyi_pillanatkep` táblát
+  (napi egy sor, `datum` UNIQUE, upsert). A tábla admin-only RLS alatt van, írni csak
+  service role tud.
+
+**A dashboard két módban olvas:** alapból a mentett pillanatképet mutatja (gyors,
+és visszamenőleg is megvan), a **Frissítés gomb** pedig élőben kéri le. Az élő ág:
+
+`Frissítés gomb` → `gazdasag-frissites` edge function (admin-ellenőrzés) →
+`Frissites webhook` node (POST, header-auth ugyanazzal az `x-api-key`-jel, amit a
+mentés használ) → ugyanaz a lánc → `Pillanatkep mentes` felülírja a mai sort.
+
+A webhook azonnal 200-at ad vissza, a lekérés a háttérben fut tovább (~20-30 mp),
+ezért a frontend a `generalva` mező változását figyeli 3 másodpercenként.
+
+**Kézi frissítésnél nem megy ki levél.** Ezt az `Utemezett futas?` IF node biztosítja
+a lánc végén: csak akkor engedi tovább az e-mailt, ha `$('Napi 7:30').isExecuted`
+igaz. A pillanatkép mentése ettől függetlenül mindkét ágon lefut.
+
+**A QUiCK token soha nem kerülhet a böngészőbe** — minden QUiCK-hívás n8n-en megy át.
+
 ### Ahol a gépi köteg hiányos lehet
 
 A workflow nem hibátlan forrás, ezért érdemes utána ellenőrizni:
@@ -100,6 +209,30 @@ A workflow nem hibátlan forrás, ezért érdemes utána ellenőrizni:
   már lefutott csomagba nem kerül bele.
 - **Részleges futás** — ha a letöltés vagy feltöltés közben elszáll, hézag marad a
   számozásban. Ezt a `szamla_rendez.py ellenoriz` elkapja.
+
+## Bevételtervezés: miért medián
+
+A fix havidíjak előrevetítésénél az **utolsó 3 hónap mediánját** használjuk, nem az
+átlagot. Nem esztétikai döntés, két konkrét adat kényszeríti ki:
+
+- **Kiugró hónap.** A Hafner Pneumatika havidíja 530 860, de 2026 májusában
+  3 602 269 Ft-ot számláztunk nekik. Hathavi átlag: 1 042 062 — majdnem a duplája a
+  valóságnak. Medián: 530 860, pontos.
+- **Lépcsőváltás.** A HDF és a Solar Konstrukt díja 2026 júniusában feleződött
+  (1 285 240 → 810 260, illetve 1 645 920 → 822 960). A hathavi medián a régi és az
+  új közé esik, vagyis **mindkét irányban téves**. Három hónapból viszont a második
+  azonos érték után már az új díjat adja — a lépcsőt egy hónap késéssel követi.
+
+A teljesítési nap és a fizetési futamidő ugyanígy medián. A szórást
+(`szoras_szazalek`) visszaadjuk, hogy az ingadozó sorok — pl. az ERSTE, ahol a havi
+összeg 2,6 és 7,9 M között mozog — láthatóan meg legyenek jelölve.
+
+Három szabály zárja ki a hamis pozitívokat:
+
+1. **Legalább 3 hónap előzmény** — új ügyfél nem tervezhető, csak a harmadik hónaptól.
+2. **Két hónapnál régebbi utolsó számla = megszűnt szerződés**, nem vetítjük előre.
+3. **Amire már van számla, azt nem vetítjük** — különben duplázna a kintlévőséggel.
+   Ez gyakoribb, mint hinnéd: a CSL szeptemberi havidíját már augusztusban kiállítjuk.
 
 ## Ha új workflow-t építesz
 
