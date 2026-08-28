@@ -116,6 +116,7 @@ Mezők: `month`, `amount`, `paid_status` — **`due_at` nincs**. Két csapda van
 | Név | ID | Állapot | Ütemezés |
 |---|---|---|---|
 | Havi könyvelési csomag | `KjnN4YdHTM1fqwxs` | aktív | 3-án 7:00 |
+| Hibariasztás | `Re169p6OL4fWiz1c` | aktív | Error Trigger |
 | Napi pénzügyi pozíció | `fnBQVW5vfmOlCg0f` | aktív | naponta 7:30 |
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
 | QUiCK API felderítés | `0wPY8RdQvAF0iETH` | inaktív | kézi |
@@ -191,8 +192,8 @@ második kimenetéről `Osszegzes` → `Osszegzo email`.
   PRINTDEKOR 07-30). Érdemes a hónap közepén egyszer újrafuttatni.
 - **10 oldal = 2000 tétel a plafon.** Túllépésnél csendben csonkulna, ezért az
   összegzés külön jelzi, ha a lekérés elérte a korlátot.
-- **Error workflow továbbra sincs beállítva.** Az összegző levél a sikeres futás
-  végén megy ki; ha a workflow félúton elszáll, arról ez sem szól.
+- **Hibáról a Hibariasztás szól.** Az összegző levél a sikeres futás végén megy ki;
+  ha a workflow félúton elszáll, arról a közös hibakezelő értesít (lásd lentebb).
 - **`has_artifact=false` némán kimarad** — a tétel a QUiCK-ben ott van, csak kép nincs
   hozzá. Ez nem a szállítón múlik, tehát nem bekérni kell, hanem a képet pótolni.
 - **10 oldal = 2000 tétel a plafon.** Jelenleg bőven elég, de túllépésnél csendben
@@ -293,6 +294,23 @@ lista. Ha valaha vissza kell térni rá: az átlag ott rossz választás, mert e
 hónap (a Hafner 2026 májusában 3 602 269 Ft-ot számlázott a szokásos 530 860 helyett)
 elviszi, a hosszabb átlag pedig elmaszatolja a díjváltozást (a HDF és a Solar díja
 2026 júniusában feleződött).
+
+## Hibariasztás — a közös hibakezelő
+
+`Re169p6OL4fWiz1c`, 3 node. Nem magától fut: **Error Trigger** indítja, ha egy másik
+workflow elszáll, és annál be van állítva hibakezelőnek. E-mailt küld
+`info@marketingstore.hu` címre: a workflow neve, a hibaüzenet, az utolsó lefutott node,
+a futás azonosítói, egy közvetlen link az n8n-beli futáshoz, és a stack trace.
+
+**Új workflow-nál ezt be kell állítani** — nem öröklődik. A workflow Settings →
+Error workflow mezőjében kell kiválasztani, vagy MCP-n:
+`setWorkflowSettings { errorWorkflow: "Re169p6OL4fWiz1c" }`, majd publikálni.
+
+Jelenleg rá van kötve: Napi pénzügyi pozíció, Havi projekteredmény, Havi könyvelési
+csomag. A „QUiCK API felderítés" szándékosan nincs: inaktív és csak kézzel indul, a
+hibakezelő pedig **csak produkciós futásnál** lép működésbe — kézi futtatásnál soha.
+Ez egyben azt is jelenti, hogy tesztelni csak szándékosan elrontott ütemezett futással
+lehet.
 
 ## Ha új workflow-t építesz
 
