@@ -166,6 +166,27 @@ kilistázza — **azt fel kell venni**, különben legközelebb is átcsúszik.
   pontosan párosíthatók — nem névre kell illeszteni. Az adó-, bér-, hitel- és saját
   számlák közötti átvezetéseket a regiszter `nem_szamla` blokkja szűri ki.
 
+### Nem minden szállító küld számlalevelet
+
+A továbbító workflow csak azt tudja elkapni, ami e-mailben megérkezik. Két eset van,
+és a kettőt nem szabad összekeverni:
+
+- **Küld számlát, csak nem oda nézel.** A Similarweb havi számlája (`billing@similarweb.com`,
+  PDF-fel, „Your Similarweb payment was successfully processed") a
+  `marketingstorekft@gmail.com` fiókba érkezik, 10-e körül. A szűrő elkapja.
+- **Egyáltalán nem küld.** Az **OpenAI** 2026-08-28-án, 90 napra visszamenőleg átnézve
+  (SPAM-mel együtt) **egyetlen számlát vagy nyugtát sem** küldött az `info@` címre —
+  csak hírlevelet és belépési kódot. A ChatGPT-előfizetés számláját mindig a portálról
+  kell letölteni, a továbbítás ezt sosem fogja megoldani.
+
+Ha egy szállító a hiánylistán marad, miközben a továbbítás működik, akkor jó eséllyel
+a második esetről van szó — írd be a regiszterbe, hogy legközelebb ne keresd újra.
+
+**Vigyázz a szűrő tágításával.** Az `in:inbox` és a SPAM kizárása nem óvatoskodás:
+2026 augusztusában egy adathalász levél („Fizetési emlékeztető: ChatGPT-előfizetésed",
+feladó `webmaster@faf75e4e63.nxcli.io`) landolt a SPAM-ben. Ez a mi kulcsszavainkra
+illeszkedne, tehát SPAM-mel együtt továbbítottuk volna a QUiCK-be.
+
 ## Visszatérő szállítók
 
 A lista a 2026. júliusi köteg (128 számla) alapján készült. **Ellenőrzőlistának való**,
