@@ -57,6 +57,22 @@ továbbá a kintlévőséget és a szállítói tartozást. **Számlánként kü
 
 **`GET /1/incomes/`** — kimenő (bevételi) számlák, ugyanazzal a lapozással.
 
+**Számlakép NINCS hozzájuk.** A mezőlista (2026-08-28-án ellenőrizve a 2026 júliusi
+27 tételen): `id`, `partner`, `partner_name` és a partner címadatai, `invoice_number`,
+`issued_at`, `fulfilled_at`, `due_at`, `net_amount`, `gross_amount`, `vat_amount`,
+`vat_area`, `currency`, `exchange_rate`, `payment_method`, `paid_status`,
+`invoice_type`, `is_cancelled`, `referred_invoice_number`, `assignments`, `tags`,
+`simple_tags`, `accounting_period_*`, `planned_payment_date`, `user_saw`, `created_at`,
+`integration_payment_method`. **`has_artifact` és `artifact_extension` nem létezik** —
+a QUiCK a kimenő számláknál csak az adatot tárolja, a PDF-et nem. Ezek a Számlázz.hu
+integrációból jönnek (`integration_payment_method` mező), tehát a nyomtatható kimenő
+számlát **a Számlázz.hu-ból kell kérni**, nem innen.
+
+Két mező kell a helyes feldolgozáshoz: `invoice_type` (0 = normál, 1 = sztornó/jóváíró,
+2, 3 = helyesbítő) és `is_cancelled`. 2026 júliusban a 27 tételből kettő sztornózott
+(MS-2026-193, MS-2026-201), és volt negatív összegű sztornó számla (MS-2026-204) is.
+Egy kimenő csomagnál a sztornó–eredeti párokat együtt kell kezelni.
+
 **`GET /2/monthly-salaries/`** — havi bérek
 
 Mezők: `month`, `amount`, `paid_status`, `due_at`. Itt a `due_at` **létezik**, tehát az
