@@ -529,6 +529,34 @@ hibakezelő pedig **csak produkciós futásnál** lép működésbe — kézi fu
 Ez egyben azt is jelenti, hogy tesztelni csak szándékosan elrontott ütemezett futással
 lehet.
 
+## A nyomtatható csomag: miért edge function
+
+Az n8n **nem tud PDF-et összefűzni**. A `Read PDF` és az `Extract from File` csak
+olvas, a Code node pedig az n8n Cloudon nem enged külső könyvtárat. Ezért a havi
+mappa egyetlen nyomtatható PDF-jét egy Supabase edge function állítja elő:
+**`konyveles-nyomtathato`** (forrás: `supabase/functions/konyveles-nyomtathato/`).
+
+Kérés: `POST`, `x-api-key` fejléc, törzs
+`{ "fajlok": [{ "nev": "...", "url": "<QUiCK aláírt link>" }], "tomor": false }`.
+Válasz: maga a PDF, a számok fejlécben (`x-tetel`, `x-oldal`, `x-iv`,
+`x-kihagyott`, `x-kihagyott-reszletek`).
+
+A szabály ugyanaz, mint a `scripts/nyomtatas.py`-ben: a páratlan oldalszámú számlák
+után üres oldal, hogy duplex nyomtatásnál minden számla új lapon kezdődjön. **Ha az
+egyiket módosítod, a másikat is kell** — különben a gépi és a kézi csomag máshogy
+nézne ki.
+
+Amiben a kettő szándékosan eltér: a fekvő képeket a szkript állóra forgatja, az edge
+function viszont fekvő A4-re teszi. Mindkettő olvasható, és a vegyes tájolású PDF-et
+a nyomtató kezeli.
+
+Az aláírt QUiCK-linkekkel dolgozik, nem a Drive-ról tölt le — így nem kell neki
+Drive-hozzáférés, és ugyanabból a forrásból veszi a fájlokat, mint a havi csomag.
+A típust a tartalom első bájtjaiból ismeri fel (`%PDF`, PNG, JPEG), nem a névből:
+az aláírt link nem mindig árulja el a kiterjesztést.
+
+Korlátok: 500 fájl, 120 MB összméret, 8 párhuzamos letöltés.
+
 ## Ha új workflow-t építesz
 
 - Használd a meglévő credentialokat, ne hozz létre újat. A QUiCK-hez a „Quick API
