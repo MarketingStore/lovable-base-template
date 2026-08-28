@@ -135,6 +135,7 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 | Hiányzó számlák riport | `9mlVyJGpvXiDP7A3` | aktív | 1-jén és 15-én 6:00 |
 | OTP kivonat összevetés | `zG1CrSLeupNQXlsS` | aktív | 1-jén és 15-én 8:00 |
 | OTP kivonat emlékeztető | `MB1UPSjGOq9UDear` | aktív | naponta 18:00 |
+| Számla továbbítás a QUiCK-re | `VJX0cdciKa4JCjuV` | aktív | 15 percenként |
 | Hibariasztás | `Re169p6OL4fWiz1c` | aktív | Error Trigger |
 | Napi pénzügyi pozíció | `fnBQVW5vfmOlCg0f` | aktív | naponta 7:30 |
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
@@ -340,6 +341,51 @@ azt a figyelmet őrli fel, amiért készült.
 
 A `Mappa tartalma` node `retryOnFail`-lel megy (3 próba, 5 mp): a Drive API
 percenkénti kvótája időnként 403-at ad, és enélkül ez felesleges hibariasztást váltana.
+
+### Számla továbbítás a QUiCK-re — mit csinál pontosan
+
+`VJX0cdciKa4JCjuV`, 5 node, aktív. A QUiCK dedikált címe:
+**`marketing-store-kft@quick.riport.co.hu`**. Ide továbbítja az
+`info@marketingstore.hu` postafiókba érkező számlaleveleket, 15 percenként.
+
+Ez váltja ki a Gmail-beli továbbítási szabályt, ami nem működött. Előnye, hogy
+szűr — a Gmail-szabály vagy mindent továbbít, vagy semmit.
+
+`Uj level csatolmannyal` (Gmail Trigger) → `Szamla-e` → `Tovabbitas a QUiCK-re`.
+Mellette egy kézi ág az ellenőrzéshez: `Kezi inditas` → `Kezi ellenorzes 2 nap`
+(Gmail lekérés) → ugyanabba a szűrőbe. **Erre azért van szükség, mert Gmail
+Triggerrel induló workflow-t nem lehet kézzel futtatni**, tehát a szűrő máshogy nem
+lenne kipróbálható. Vigyázz: a kézi futtatás újraküldi az elmúlt két nap találatait.
+
+**A szűrés két feltétele együtt kell:**
+
+1. Legyen **PDF vagy kép** csatolmány.
+2. A **feladó, a tárgy vagy a csatolmány neve** utaljon számlára (`szamla`,
+   `invoice`, `receipt`, `dijbekero`, `fizetesi emlekezteto`, `billing@`,
+   `invoice+…@stripe.com` stb., ékezetmentesítve).
+
+Külön-külön egyik sem elég: a kreatív anyagok is képek, a hírlevelek is emlegetnek
+számlázást.
+
+**Csatolmányválogatás.** Ha van PDF a levélben, **csak a PDF-ek** mennek át. Kép csak
+akkor, ha PDF egyáltalán nincs (lefotózott számla), és akkor is csak 20 kB felett. Ez
+az aláírásképek miatt kell: a Reklámajándék leveleiben a számla mellett ott van egy
+`image001.png` és egy `image002.png` (2–7 kB), amik szemétként landolnának a QUiCK-ben.
+
+**Két csapda, amit a teszt hozott elő:**
+
+- A `has:attachment` lekérés a **SENT mappát is hozza**. Enélkül a saját, csatolmányos
+  kimenő leveleinket (pl. a fénymásoló számlálóleveleit) is továbbítottuk volna.
+  Ezért van mindkét lekérésben `in:inbox`.
+- A `quick.riport.co.hu` feladójú levelet a szűrő kihagyja, különben kör keletkezne.
+
+A `simple: false` kell a csatolmányokhoz, viszont a teljes levelet parse-olja, ezért
+`maxResults: 10` korlátozza a memóriaterhelést.
+
+Teszt 2026-08-28-án, 14 napra visszanézve: **8 találat, mind valódi számla**
+(ElevenLabs, Laravel Cloud, WEBHELY.EU ×2, Reklámajándék ×2, Innovariant, HeyGen),
+téves találat nélkül. Kettő közülük — ElevenLabs, Laravel — épp az OTP-összevetés
+hiánylistáján szerepelt, tehát a két workflow ugyanazt a rést zárja két oldalról.
 
 ### Napi pénzügyi pozíció — mit csinál pontosan
 

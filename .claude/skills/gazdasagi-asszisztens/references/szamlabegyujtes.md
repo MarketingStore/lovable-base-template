@@ -26,6 +26,13 @@ köteg teljes-e, és ami hiányzik, az miért hiányzik. A hiány két helyen ke
 Ha ezt összekevered, feleslegesen zaklatsz szállítókat olyan számláért, ami rég
 megvan.
 
+**Az e-mailben érkező számlák maguktól bekerülnek.** A „Számla továbbítás a QUiCK-re"
+workflow 15 percenként átnézi az `info@marketingstore.hu` postafiókot, és a
+számlának tűnő, PDF-es leveleket továbbítja a
+`marketing-store-kft@quick.riport.co.hu` címre. Ez váltotta ki a nem működő
+Gmail-továbbítási szabályt. **Csak a mostantól érkezőket** nézi — ami korábban
+beragadt a postafiókba, azt kézzel kell pótolni.
+
 ## A havi ellenőrzés menete
 
 **1. Nézd meg, lefutott-e a workflow.** A hónap 1-je után lennie kell friss
