@@ -155,12 +155,18 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 | Hibariasztás | `Re169p6OL4fWiz1c` | aktív | Error Trigger |
 | Napi pénzügyi pozíció | `fnBQVW5vfmOlCg0f` | aktív | naponta 7:30 |
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
+| Terv-tény adatok — Napfény Park | `U4kxI4bcq3lTGXWw` | aktív | 1-jén 7:15 |
 | QUiCK API felderítés | `0wPY8RdQvAF0iETH` | inaktív | kézi |
+| Metricool felderítés | `khPbJC9XtY6zLzMl` | inaktív | kézi |
 
-**Mielőtt bármelyiket elindítod:** az aktív workflow-k mellékhatással járnak — három
-e-mailt küld, egy Drive-ra ír és mappát hoz létre. Ne futtasd őket próbaképp. A
-felderítő workflow viszont read-only GET, azt nyugodtan lehet, ha az API válaszának
+**Mielőtt bármelyiket elindítod:** az aktív workflow-k mellékhatással járnak — négy
+e-mailt küld, egy Drive-ra ír és mappát hoz létre. Ne futtasd őket próbaképp. A két
+felderítő workflow viszont read-only GET, azokat nyugodtan lehet, ha az API válaszának
 szerkezetére vagy kíváncsi.
+
+**A végrehajtási előzmény kb. 8 napra visszamenőleg van meg** az n8n Cloudon. Havi
+workflow-nál tehát a `search_workflow_executions` üres találata **nem** bizonyítja,
+hogy sosem futott — a kimenetét kell megnézni (Sheet, Drive-mappa, levél).
 
 ### Havi könyvelési csomag — mit csinál pontosan
 

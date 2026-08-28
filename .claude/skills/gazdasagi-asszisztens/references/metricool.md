@@ -141,3 +141,34 @@ viszont igen, ha van rá konvenció: a júliusi listában ott van a
 `NP_alwayson_eleres_2026` (always-on) és a „Júliusi nyereményjáték!" (9 995 Ft)
 külön kampányként. **Kampány-névkonvenció nélkül a szétosztás kézi marad**, és ezt
 nem szabad megtippelni: rossz sorba tett költés a terv-tény egész logikáját elrontja.
+
+## A „Terv-tény adatok — Napfény Park" workflow
+
+`U4kxI4bcq3lTGXWw`, aktív, minden hónap **1-jén 7:15**. Levelet küld a
+perenyi@marketingstore.hu címre arról, hogy cellánként mi kerüljön az előző hónap
+Tény oszlopába, Excel-melléklettel.
+
+Lánc: `Honap 1-jen 7:15` → `Elozo honap` → `FB Ads koltes` → `Google Ads koltes`
+→ `Cellak osszeallitasa` → `Cella sorok` → `Cellak xlsx` → `Ertesito email`.
+
+**Nem írja a táblát, csak megmondja, mit írj bele.** Ez szándékos: a
+`2026_NP_tervtény.xlsx` nincs a közös Drive-on, és amúgy is kézzel szerkeszted
+ugyanakkor — egy gépi felülírás elvinné a saját munkádat.
+
+Az oszlopleképezés az `Elozo honap` node-ban van, a tábla szerkezetéből:
+
+| | jan | feb | már | ápr | máj | jún | júl | aug | szep | okt | nov | dec |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Terv | G | J | M | P | S | V | Y | AB | AE | AH | AK | AN |
+| Tény | H | K | N | Q | T | W | Z | AC | AF | AI | AL | AO |
+
+Ha a tábla szerkezete változik, **itt kell átírni** — a levél cellahivatkozásokat
+mond, tehát a rossz térkép rossz helyre íratna.
+
+**A valódi hibamód nem a hiba, hanem a nulla.** Ha a Metricoolban megszakad a
+hirdetési fiók kapcsolata, a végpont nem hibázik, hanem üres listát ad — és a 0 Ft
+észrevétlenül bekerülne a táblába. Ezért a workflow külön figyeli, hogy jött-e
+egyáltalán kampány, és ilyenkor a levél tárgyába is kiteszi, hogy `ELLENŐRIZNI`.
+
+Teszt 2026-08-28-án (júliusra): `Z11 = =71284*1.15`, `Z14 = =30367*1.15` — bitre
+ugyanaz, ami a táblában kézzel már be van írva.
