@@ -265,10 +265,19 @@ API listázás) → `Fajlok szetbontasa` → `Kivonat letoltese` (`?alt=media`, 
 
 **A formátum camt.052.** Az OTP netbankban a *Számlatörténet → XML* ad ilyet, és
 bármikor lehívható — nem kell megvárni a hónap zárását. A PDF bankszámlakivonat nem
-használható. A fájlnév a hónapot félrevezetően jelöli (a 2026 augusztusi letöltés
-neve `222_202607.xml`), ezért az időszakot **mindig az XML `FrToDt` mezőjéből** vesszük,
-soha nem a névből — ez megy a levél tárgyába is, hogy egy elavult futás azonnal
-látszódjon a postaládában.
+használható.
+
+**A fájlnév szabad**, és ez szándékos: a bankból jövő név a hónapot félrevezetően
+jelöli (a 2026 augusztusi letöltés neve `222_202607.xml`), tehát nem lenne mire
+építeni. Az időszakot **mindig az XML `FrToDt` mezőjéből** vesszük — ez megy a levél
+tárgyába is, hogy egy elavult futás azonnal látszódjon a postaládában.
+
+**Bankszámlánként a legfrissebb kivonat számít.** A `Tetelek` node az `Acct/Id` szerint
+csoportosít, és számlánként a legkésőbbi `FrToDt` záró dátumú fájlt használja (holt-
+versenynél a Drive `modifiedTime` dönt); a többit kihagyja, és a levél fejléce meg is
+nevezi, melyiket használta és melyiket hagyta ki. Enélkül a mappában felejtett előző
+havi XML csendben összemosódott volna az aktuálissal — így viszont a régiek
+archívumnak bent maradhatnak.
 
 **Amit a camt-ból tudni kell.** A `Sts=PDNG` (függő) kártyás tételnek **nincs
 könyvelési dátuma**: üres a `BookgDt` és a `ValDt` is, a dátum csak a

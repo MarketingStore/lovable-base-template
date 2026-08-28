@@ -100,8 +100,11 @@ letöltés, mindkét számlához (`11735184-20000222` és `11735184-20000239`), 
 a `0Könyvelési anyag` mappába kell tenni. Ez bármikor lehívható, nem kell megvárni a
 hónap zárását — és a PDF bankszámlakivonat erre nem jó, mert nem gépi olvasású.
 
-A riport annyit lát, amennyi XML a mappában van. Ha nem frissíted, az ütemezett futás
-a régi időszakról szól, ezért a levél tárgyában ott a kivonat dátumtartománya.
+**A fájlnévvel nem kell foglalkozni**, hagyható az OTP alapértelmezett neve: az
+időszakot az XML-ből olvassuk, és bankszámlánként mindig a legfrissebb kivonat számít,
+a régiek bent maradhatnak. A riport tehát annyit lát, amennyit legutóbb letöltöttél —
+ezért van a levél tárgyában a dátumtartomány, a fejlécében pedig a felhasznált fájlok
+neve.
 
 Kézzel, soron kívül ugyanez:
 
