@@ -127,28 +127,60 @@ szerkezetére vagy kíváncsi.
 
 ### Havi könyvelési csomag — mit csinál pontosan
 
-Ez állítja elő a `0Könyvelési anyag/Konyveles ÉÉÉÉ-HH` mappát:
+`KjnN4YdHTM1fqwxs`, 10 node, aktív. Ez állítja elő a `0Könyvelési anyag/Konyveles
+ÉÉÉÉ-HH` mappát, nyomtatásra rendezett számlaképekkel.
 
-1. Kiszámolja az előző hónap tartományát.
-2. Létrehozza a mappát (Drive credential: **„Board tárhely - H"**).
-3. `GET /2/expenses/` az előző hónapra, `fulfilled_at` szerint, lapozva (max 10 oldal).
-4. Kiszűri, aminek nincs számlaképe (`has_artifact`), rendez `fulfilled_at`, majd
-   `id` szerint, és sorszámoz 001-től.
-5. Fájlnevet képez: `{sorszám}_{fulfilled_at}_{tisztított partner_name}.{kiterjesztés}`
-6. Letölti a képeket (5-ös kötegekben) és feltölti a mappába.
+Két indítója van: **`Ho 3-an 7:00`** (havonta, 3-án 07:00) és **`Kezi inditas`**.
+Mindkettő ugyanoda fut be, tehát kézzel bármikor újrafuttatható — de lásd lentebb,
+hogy ennek van egy csapdája.
 
-A névtisztítás:
+A lánc: `Elozo honap` → `Mappa letrehozasa` → `Honap tetelei` →
+`Sorrend es azonositok` → `Letoltesi linkek` → `Parositas` →
+`Szamlakep letoltese` → `Feltoltes Drive-ra`.
 
-```js
-String(s||'').replace(/[\\/:*?"<>|]/g,'-').replace(/\s+/g,'_').slice(0,60)
-```
+1. **`Elozo honap`** — kiszámolja az előző hónap tartományát a *futtatás napjából*:
+   `new Date(év, hónap, 0)` az előző hónap utolsó napja, `new Date(év, hónap-1, 1)`
+   az elseje. A `cimke` mező (`2026-08`) megy a mappanévbe. Nincs paraméterezve:
+   **mindig az előző hónapot csinálja**, tehát egy elmaradt hónapot kézi futtatással
+   nem lehet pótolni, csak a kód átírásával.
+2. **`Mappa letrehozasa`** — létrehozza a `Konyveles {cimke}` mappát a
+   `1s2wPzRFCf5qbGPZAP-iD8J1Xoak5kqle` (`0Könyvelési anyag`) alatt, a
+   „Board tárhely - H" Drive-fiók My Drive-jában. `executeOnce`.
+3. **`Honap tetelei`** — `GET /2/expenses/`, `date_field=fulfilled_at`, a hónap
+   tartományára, `ordering=fulfilled_at`, `page_size=200`, lapozás a `body.next`
+   alapján, **maximum 10 oldal** (300 ms szünettel). `executeOnce`.
+4. **`Sorrend es azonositok`** — kiszűri, aminek nincs számlaképe (`has_artifact`),
+   rendez `fulfilled_at`, azonosnál `id` szerint, majd **001-től sorszámoz**, és
+   képzi a fájlnevet: `{sorszám}_{fulfilled_at}_{tisztított partner}.{kiterjesztés}`.
+   A névtisztítás: `replace(/[\\/:*?"<>|]/g,'-').replace(/\s+/g,'_').slice(0,60)`.
+   A `scripts/szamla_rendez.py` ezt bitre reprodukálja.
+5. **`Letoltesi linkek`** — `POST /1/artifacts/expense/` az összes id-vel, egy hívásban.
+6. **`Parositas`** — `expense_id` alapján összeköti a sorszámozott listát a kapott
+   URL-ekkel, és **csak azokat adja tovább, amelyekhez van `url`**.
+7. **`Szamlakep letoltese`** — letölti az aláírt URL-eket, 5-ös kötegekben, 500 ms
+   szünettel. Ez a node szándékosan hitelesítés nélküli: az URL már aláírt.
+8. **`Feltoltes Drive-ra`** — feltölti a képet a 4. lépésben képzett néven a 2.
+   lépésben létrehozott mappába.
 
-A `scripts/szamla_rendez.py` ezt bitre reprodukálja, hogy a kézzel pótolt számla neve
-ne térjen el a gépitől.
+### Amit a havi csomagnál tudni kell
 
-**Ebből következik, hogy a fájlnév dátuma a teljesítés dátuma**, nem a számla kelte és
-nem a fizetési határidő. Ez könnyen félreérthető, mert a legtöbb számlánál a kettő
-egybeesik — de nem mindig.
+- **Kézi újrafuttatás duplikált mappát csinál.** A `Mappa letrehozasa` feltétel nélkül
+  hoz létre mappát, a Drive pedig megengedi az azonos nevet. Egy második futás tehát
+  nem a meglévő mappát tölti fel újra, hanem egy **második, ugyanolyan nevű mappát**
+  készít, és oda tölt. Ha újra kell futtatni, előbb nevezd át vagy töröld a meglévőt.
+- **A sorszám a hézag forrása.** A számozás a 4. lépésben dől el, az URL-ek lekérése
+  *előtt*. Ha egy tételhez nem jön vissza letöltési link, az a sorszám kimarad, és a
+  mappában hézag lesz (001, 002, 004…). Pont ezt kapja el a
+  `szamla_rendez.py ellenoriz` — a hézag nem kozmetikai hiba, hanem hiányzó számla.
+- **Nincs visszajelzés.** A workflow az utolsó feltöltés után véget ér: nem küld
+  levelet, nem ír összesítőt, és **nincs beállítva error workflow** sem. Ha félúton
+  elszáll, arról magától senki nem értesül. Ezért kell a futás után ellenőrizni.
+- **`has_artifact=false` némán kimarad** — a tétel a QUiCK-ben ott van, csak kép nincs
+  hozzá. Ez nem a szállítón múlik, tehát nem bekérni kell, hanem a képet pótolni.
+- **10 oldal = 2000 tétel a plafon.** Jelenleg bőven elég, de túllépésnél csendben
+  csonkulna.
+- **A 3-a után rögzített számla kimarad.** A futás egyszeri; ami később kerül be a
+  QUiCK-be, az a már elkészült csomagba nem kerül bele.
 
 ### Napi pénzügyi pozíció — mit csinál pontosan
 
