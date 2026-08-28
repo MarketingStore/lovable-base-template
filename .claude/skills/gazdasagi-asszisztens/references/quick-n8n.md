@@ -561,11 +561,12 @@ A típust a tartalom első bájtjaiból ismeri fel (`%PDF`, PNG, JPEG), nem a n�
 az aláírt link nem mindig árulja el a kiterjesztést.
 
 **Memóriakorlát — ezt méréssel tudjuk.** A Supabase edge function worker véges
-memóriát kap. Éles adaton (2026 július, 133 számla): **80 tétel hibátlanul lefut
-~9 másodperc alatt, 133 viszont `WORKER_RESOURCE_LIMIT` hibát ad**, kétszer is,
-tehát nem hidegindítás. Ezért a függvény nem tölti előre az összes fájlt a
-memóriába, hanem legfeljebb 6 elemű előretöltő ablakkal halad, és a feldolgozott
-elemet azonnal elengedi.
+memóriát kap. Az első változat előre letöltötte az összes fájlt a memóriába, és
+éles adaton (2026 július, 133 számla) **80 tételig ment el: 133-nál
+`WORKER_RESOURCE_LIMIT`**, kétszer is, tehát nem hidegindítás. Ezért a függvény
+azóta nem tölt előre, hanem legfeljebb 6 elemű előretöltő ablakkal halad, és a
+feldolgozott elemet azonnal elengedi. Ezzel a 133 tétel **14 másodperc alatt
+lefut**: 175 oldal, 146 ív, 0 kihagyott, 26,2 MB.
 
 Ha egyszer mégis kevés lenne, a `resz: { tol, ig }` mezővel az n8n oldaláról
 darabolható a függvény módosítása nélkül — ilyenkor több részfájl készül.
@@ -582,9 +583,17 @@ A `Nyomtathato lista` **nem** a `Parositas` kimenetét használja, hanem a linke
 `Letoltesi linkek` node-ról olvassa vissza: a nyomtatható csomagba a hónap minden
 számlája kell, nem csak az, ami még hiányzott a mappából.
 
-A feltöltött fájl nevében ott a futás dátuma (`Konyveles 2026-07 nyomtathato
-(2026-09-01).pdf`), tehát egy későbbi, pótló futás nem írja felül a korábbit, hanem
-mellé kerül — így látszik, melyik a frissebb.
+A `Nyomtathato PDF` node `fullResponse: true`-val megy: a bináris így is a `data`
+mezőbe kerül, viszont megkapjuk a statisztikát a fejlécekből. Az **ívszám bekerül a
+fájlnévbe** — `Konyveles 2026-07 nyomtathato (146 iv, 2026-09-01).pdf` —, tehát a
+papírigény nyomtatás előtt látszik, és egy későbbi, pótló futás nem írja felül a
+korábbit, hanem mellé kerül.
+
+Mekkora a megtakarítás: a júliusi 133 számla **175 oldal**, ami egyoldalasan 175 ív,
+ívhatáros duplexszel **146 ív** — 29 ívvel kevesebb (17%). A duplex csak a
+többoldalas számlákon nyer, mert az egyoldalasnak akkor is kell egy teljes ív. A
+valódi nyereség nem is a papír, hanem hogy **egy fájl és egy nyomtatási feladat**
+133 helyett.
 
 ## Ha új workflow-t építesz
 
