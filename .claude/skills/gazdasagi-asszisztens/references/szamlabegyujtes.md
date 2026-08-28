@@ -68,6 +68,42 @@ QUiCK-be. A visszatérő szállítók listája lentebb.
 **5. Ami tényleg hiányzik**, azt kérd be — és jegyezd fel, honnan jött, hogy legközelebb
 gyorsabb legyen.
 
+## Nyomtatás a könyvelőnek
+
+A mappában 130+ külön fájl van. Egyenként nyomtatni sok kattintás; egy kötegben
+duplexre küldeni viszont azzal jár, hogy a nyomtató a következő számlát az előző
+hátoldalára teszi, és a könyvelő két különböző számlát kap egy lapon.
+
+A megoldás: **egyetlen összefűzött PDF**, amiben a páratlan oldalszámú számlák után
+van egy üres oldal. Így duplex nyomtatásnál minden számla új lap elején kezdődik, a
+többoldalasak viszont két oldalra kerülnek.
+
+```bash
+python3 scripts/nyomtatas.py --mappa "Konyveles 2026-07" --statisztika   # előbb számol
+python3 scripts/nyomtatas.py --mappa "Konyveles 2026-07"                 # aztán fájl
+```
+
+A mappát a Drive-ról egyben letöltheted (jobb klikk a mappán → *Letöltés*, zip-et ad).
+A kész fájlt **egy** nyomtatási feladatként küldd: kétoldalas, **hosszú él mentén**
+fordítva, méretezés nélkül (100%).
+
+A `--statisztika` háromféle papírigényt mutat: egyoldalas, ívhatáros duplex (ez), és
+`--tomor` duplex. Utóbbi elhagyja az üres oldalakat, tehát a legtöbbet spórolja, de
+egy lapra két különböző számla kerülhet — **csak a könyvelővel egyeztetve** használd.
+
+Amire a szkript külön figyel:
+
+- **Sorrend.** A fájlneveket rendezi, ami a `001_`, `002_` konvenció miatt pont a
+  teljesítés szerinti sorrend — ugyanaz, amit a havi csomag workflow képzett.
+- **Zárolt PDF.** Sok szállítói számla tulajdonosi jelszóval van védve nyomtatás
+  ellen, felhasználói jelszó nélkül. Ezt üres jelszóval feloldja.
+- **Képként érkezett számla.** A jpg/png tételeket A4-es oldalra teszi; a fekvő
+  fotókat állóra forgatja, mert úgy olvashatóbbak. Ehhez Pillow kell
+  (`pip install Pillow`) — enélkül kihagyja és felsorolja őket. A 2026 júliusi
+  mappában egyébként mind a 133 fájl PDF volt, tehát ez ritka eset.
+- **Amit nem tud feldolgozni**, azt a végén kilistázza, hogy kézzel pótolhasd.
+  Csendben soha nem hagy ki semmit.
+
 ## Kézi pótlás
 
 Ha egy számlát kézzel kell a mappába tenni (mert a QUiCK-ben nincs kép, de a PDF

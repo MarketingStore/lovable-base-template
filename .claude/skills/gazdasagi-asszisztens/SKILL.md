@@ -87,6 +87,7 @@ python3 scripts/szamla_rendez.py ellenoriz --mappa <havi mappa>   # ép-e a köt
 python3 scripts/szamla_rendez.py osszesito --mappa <mappa> --csv ossz.csv
 python3 scripts/szamla_rendez.py atnevez manifest.json --mappa <mappa> --szimulacio
 python3 scripts/otp_osszevetes.py --kivonat 222.xml 239.xml --quick q.json
+python3 scripts/nyomtatas.py --mappa "Konyveles 2026-07"          # egy nyomtatható PDF
 ```
 
 **A hiány zöme a bankkártyás terheléseknél van**, nem a beérkező számlák között: a
