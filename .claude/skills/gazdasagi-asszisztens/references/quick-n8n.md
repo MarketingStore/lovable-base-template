@@ -426,7 +426,8 @@ számlalistát küldött — a neve és a leírása sokáig ezt őrizte, ezért 
 
 Lánc: `Napi 7:30` → `Egyenlegek` → `Kintlevoseg` → `Kategorizalando` → `Berek` →
 `Adok` → `Osszes bevetel` → `Kifizetetlen szamlak` → `Lista osszeallitasa` →
-`Ber es ado kotelezettsegek` → (`Ertesito email`, `Pillanatkep mentes`).
+`Ber es ado kotelezettsegek` → (`Utemezett futas?` → `Fizetendo sorok` →
+`Fizetendo xlsx` → `Ertesito email`, `Pillanatkep mentes`).
 
 - **`Lista osszeallitasa`** — összerakja a strukturált `adat` pillanatképet és egy
   **rövid** vezetői levelet, benne a CTA-gombbal a dashboardra:
@@ -462,6 +463,27 @@ ezért a frontend a `generalva` mező változását figyeli 3 másodpercenként.
 **Kézi frissítésnél nem megy ki levél.** Ezt az `Utemezett futas?` IF node biztosítja
 a lánc végén: csak akkor engedi tovább az e-mailt, ha `$('Napi 7:30').isExecuted`
 igaz. A pillanatkép mentése ettől függetlenül mindkét ágon lefut.
+
+**Excel-melléklet a reggeli levélben.** A levél rövid marad, de a fizetendő számlák
+teljes listája melléklettel érkezik, hogy szűrhető és összegezhető legyen:
+`Utemezett futas?` → `Fizetendo sorok` → `Fizetendo xlsx` → `Ertesito email`.
+
+- **`Fizetendo sorok`** — az `adat.fizetendo` tömör mezőit (`p`, `sz`, `h`, `n`, `o`,
+  `dev`) olvasható oszlopnevekre fordítja, és számol egy `Állapot` oszlopot
+  (Lejárt / 3 napon belül / 2 héten belül / Későbbi). Az `Összeg (HUF)` és a
+  `Hátralévő nap` **számként** megy ki, nem szövegként, különben az Excelben nem
+  lehetne se összeadni, se sorba rendezni. Üres listánál egy „Nincs fizetendő számla"
+  sort ad vissza — nulla elemű kimenet esetén ugyanis a lánc megállna, és a napi
+  levél némán elmaradna.
+- **`Fizetendo xlsx`** — `convertToFile`, `xlsx` művelet, munkalap „Fizetendo szamlak",
+  a fájlnév dátumos: `Fizetendo szamlak 2026-08-28.xlsx`.
+- Az `Ertesito email` bemenete ettől kezdve a táblázat-elem, tehát a levél szövegében
+  a `$json.*` hivatkozások nem működnének — mindegyik
+  `$('Havidij elorejelzes').first().json.*` alakra változott. A csatolás az
+  `options.attachmentsUi.attachmentsBinary` mezőben, `data` property névvel.
+
+Teszt 2026-08-28-án (`Ertesito email` ideiglenesen kikapcsolva): 37 sor, 26,1 kB,
+helyes fájlnév. Utána a node visszakapcsolva és a workflow publikálva.
 
 **A QUiCK token soha nem kerülhet a böngészőbe** — minden QUiCK-hívás n8n-en megy át.
 
