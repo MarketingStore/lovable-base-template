@@ -344,18 +344,33 @@ percenkénti kvótája időnként 403-at ad, és enélkül ez felesleges hibaria
 
 ### Számla továbbítás a QUiCK-re — mit csinál pontosan
 
-`VJX0cdciKa4JCjuV`, 5 node, aktív. A QUiCK dedikált címe:
-**`marketing-store-kft@quick.riport.co.hu`**. Ide továbbítja az
-`info@marketingstore.hu` postafiókba érkező számlaleveleket, 15 percenként.
+`VJX0cdciKa4JCjuV`, 7 node, aktív. A QUiCK dedikált címe:
+**`marketing-store-kft@quick.riport.co.hu`**. Ide továbbítja a számlaleveleket,
+15 percenként, **két postafiókból**:
+
+- `info@marketingstore.hu` (credential `KibHepK4wJFvDeHc`)
+- `marketingstorekft@gmail.com` (credential `u3tecPDMJ9cNqtiA`) — több szolgáltatói
+  fiók ehhez a címhez van bekötve, tehát a külföldi SaaS-számlák jó része ide érkezik
+
+Ez nem elméleti: a 2026 augusztusi hiánylistán szereplő **Lovable-számla ebben a
+második fiókban ült**, ezért nem jutott el a QUiCK-be. Ha új céges cím kerül képbe,
+fel kell venni ide is, különben csendben kimarad.
+
+A továbbított levél megírja, melyik postafiókból jött — a `postafiok` mező a levél
+`To` fejlécéből jön, tehát nem kell külön jelölni.
 
 Ez váltja ki a Gmail-beli továbbítási szabályt, ami nem működött. Előnye, hogy
 szűr — a Gmail-szabály vagy mindent továbbít, vagy semmit.
 
-`Uj level csatolmannyal` (Gmail Trigger) → `Szamla-e` → `Tovabbitas a QUiCK-re`.
-Mellette egy kézi ág az ellenőrzéshez: `Kezi inditas` → `Kezi ellenorzes 2 nap`
-(Gmail lekérés) → ugyanabba a szűrőbe. **Erre azért van szükség, mert Gmail
-Triggerrel induló workflow-t nem lehet kézzel futtatni**, tehát a szűrő máshogy nem
-lenne kipróbálható. Vigyázz: a kézi futtatás újraküldi az elmúlt két nap találatait.
+`info@ uj level` és `kft@ uj level` (két Gmail Trigger) → `Szamla-e` →
+`Tovabbitas a QUiCK-re`. Mellette egy kézi ág az ellenőrzéshez: `Kezi inditas` →
+`info@ kezi ellenorzes` és `kft@ kezi ellenorzes` (Gmail lekérés, 2 nap) → ugyanabba
+a szűrőbe. **Erre azért van szükség, mert Gmail Triggerrel induló workflow-t nem
+lehet kézzel futtatni**, tehát a szűrő máshogy nem lenne kipróbálható. Vigyázz: a
+kézi futtatás újraküldi az elmúlt két nap találatait.
+
+Minden trigger saját, független futást indít, tehát a két postafiók nem zavarja
+egymást; a kézi ágon a `Szamla-e` fiókonként egyszer fut le.
 
 **A szűrés két feltétele együtt kell:**
 

@@ -27,9 +27,11 @@ Ha ezt összekevered, feleslegesen zaklatsz szállítókat olyan számláért, a
 megvan.
 
 **Az e-mailben érkező számlák maguktól bekerülnek.** A „Számla továbbítás a QUiCK-re"
-workflow 15 percenként átnézi az `info@marketingstore.hu` postafiókot, és a
-számlának tűnő, PDF-es leveleket továbbítja a
-`marketing-store-kft@quick.riport.co.hu` címre. Ez váltotta ki a nem működő
+workflow 15 percenként átnézi az `info@marketingstore.hu` **és a
+`marketingstorekft@gmail.com`** postafiókot, és a számlának tűnő, PDF-es leveleket
+továbbítja a `marketing-store-kft@quick.riport.co.hu` címre. A második fiók azért
+kell, mert több szolgáltatói fiók ahhoz a címhez van bekötve — az augusztusi
+hiánylistán szereplő Lovable-számla is ott ült. Ez váltotta ki a nem működő
 Gmail-továbbítási szabályt. **Csak a mostantól érkezőket** nézi — ami korábban
 beragadt a postafiókba, azt kézzel kell pótolni.
 
