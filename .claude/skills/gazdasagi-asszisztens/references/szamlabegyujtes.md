@@ -115,6 +115,9 @@ addigra a mappában kell lennie. A kettőnek más a szerepe, és ebből jön az 
 | 1-jén 8:00 | az előző hónap zárása, a könyvelőnek | **a hónap utolsó napján**, este |
 | 15-én 8:00 | korai jelzés, még van idő bekérni | 14-én vagy 15-én reggel 8 előtt |
 
+Erre **emlékeztető is megy** `perenyi@marketingstore.hu` címre, a hónap utolsó napján
+és 14-én 18:00-kor — de csak akkor, ha aznap még nem került fel mindkét XML.
+
 Az 1-jei futásnál a hónap utolsó napja a lényeg: a letöltött számlatörténet a
 **tárgyhó elejétől a letöltés pillanatáig** tart (a 2026-08-28-i letöltés
 `2026-08-01 … 2026-08-28` volt). Ha tehát 1-jén töltenéd le, a fájl a *nyitó* napról

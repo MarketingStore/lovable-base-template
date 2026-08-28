@@ -134,6 +134,7 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 | Havi könyvelési csomag | `KjnN4YdHTM1fqwxs` | aktív | **1-jén 7:00** |
 | Hiányzó számlák riport | `9mlVyJGpvXiDP7A3` | aktív | 1-jén és 15-én 6:00 |
 | OTP kivonat összevetés | `zG1CrSLeupNQXlsS` | aktív | 1-jén és 15-én 8:00 |
+| OTP kivonat emlékeztető | `MB1UPSjGOq9UDear` | aktív | naponta 18:00 |
 | Hibariasztás | `Re169p6OL4fWiz1c` | aktív | Error Trigger |
 | Napi pénzügyi pozíció | `fnBQVW5vfmOlCg0f` | aktív | naponta 7:30 |
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
@@ -316,6 +317,29 @@ ebből **63 kártyás** 1 428 173 Ft-ért; **34 terheléshez nem volt számla** 
 **Ismert korlát:** a riport annyit lát, amennyi XML a mappában van. Ha nem frissíted,
 az ütemezett futás a régi időszakról szól — ezért van a levél tárgyában és fejlécében
 is ott a kivonat dátumtartománya.
+
+### OTP kivonat emlékeztető — mit csinál pontosan
+
+`MB1UPSjGOq9UDear`, 6 node, aktív. Az egyetlen kézi lépésre — a kivonat letöltésére —
+emlékeztet, **`perenyi@marketingstore.hu`** címre (nem az info@-ra, mint a többi levél;
+küldeni viszont az `info@marketingstore.hu` fiókból küld).
+
+`Napi 18:00` → `Esedekes-e ma` → `Mappa tartalma` → `Kell-e emlekezteto` →
+`Emlekezteto email`.
+
+**Naponta fut, és a kódban dől el, hogy esedékes-e.** Két nap számít: a hónap
+**utolsó napja** és **14-e** — mindkettő a másnap 8:00-s összevetés előestéje. Azért
+nem két ütemezett trigger, mert a hónap utolsó napját cronnal nem lehet megadni: egy
+`31`-es nap 30 napos hónapokban sosem sülne el.
+
+**Csak akkor szól, ha tényleg kell.** A `Kell-e emlekezteto` megnézi a
+`0Könyvelési anyag` mappát: ha aznap már felkerült mindkét XML (két bankszámla, két
+fájl), üres tömböt ad vissza, és az e-mail node el sem indul. Ha csak az egyik van meg,
+szól, és megírja, melyik került már fel. Egy feleslegesen kiküldött emlékeztető pont
+azt a figyelmet őrli fel, amiért készült.
+
+A `Mappa tartalma` node `retryOnFail`-lel megy (3 próba, 5 mp): a Drive API
+percenkénti kvótája időnként 403-at ad, és enélkül ez felesleges hibariasztást váltana.
 
 ### Napi pénzügyi pozíció — mit csinál pontosan
 
