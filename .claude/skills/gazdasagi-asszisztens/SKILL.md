@@ -134,6 +134,21 @@ Négyféle számlázási tétel fordul elő: havi fix retainer, projektalapú, t
 és média-költségkeret. Mindegyik más ellenőrzést kíván — részletek:
 **`references/szamlazas.md`**.
 
+### 4. Terv-tény tábla (ERSTE-s házak)
+
+Az ERSTE-s házaknál éves terv-tény tábla fut (`ÉÉÉÉ_<ház>_tervtény.xlsx`),
+hónaponként Terv / Tény / Különbözet hármas oszlopokkal. A követő hónap 1-jén kell
+kitölteni: a menedzsment sorokba a fix havidíj megy, a hirdetési sorokba a
+**tényleges nettó költés × 1,15** (ügynökségi jutalék).
+
+A költés forrása a **Metricool** — a `/stats/facebookads/campaigns` és
+`/stats/adwords/campaigns` végpont forintra ugyanazt adja, mint a Swydo-riport
+(2026. júliusra ellenőrizve). Végpontok, mezőnevek, blogId-k és az n8n-buktatók:
+**`references/metricool.md`**.
+
+Amit **nem szabad gépiesíteni**: a Facebook-költés szétosztását a keret- / lead-játék
+/ esemény sorok között. Ehhez kampány-névkonvenció kell; enélkül kérdezz.
+
 ## Munkastílus
 
 **Kérdezz, ha az adat hiányzik, ne találd ki.** Egy rossz összeg a TIG-en később
@@ -145,8 +160,9 @@ Ne hallgasd el, hogy egy TIG-hez nincs meg az összeg.
 
 **Írd vissza, amit megtudsz.** Az ügyfélregiszter (`references/ugyfelek.json`), a
 beszerzési regiszter (`references/beszerzesi-regiszter.json`), a
-szállítólista (`references/szamlabegyujtes.md`) és a QUiCK-leírás
-(`references/quick-n8n.md`) szándékosan bővíthető. Ha új ügyfél lép be, új API-végpont
+szállítólista (`references/szamlabegyujtes.md`), a QUiCK-leírás
+(`references/quick-n8n.md`) és a Metricool-leírás (`references/metricool.md`)
+szándékosan bővíthető. Ha új ügyfél lép be, új API-végpont
 derül ki, vagy változik egy workflow, frissítsd a fájlt — ez a skill memóriája, és
 csak akkor ér valamit, ha karban van tartva.
 
