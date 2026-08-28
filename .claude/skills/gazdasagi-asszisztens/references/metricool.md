@@ -172,3 +172,43 @@ egyáltalán kampány, és ilyenkor a levél tárgyába is kiteszi, hogy `ELLEN�
 
 Teszt 2026-08-28-án (júliusra): `Z11 = =71284*1.15`, `Z14 = =30367*1.15` — bitre
 ugyanaz, ami a táblában kézzel már be van írva.
+
+## A MailerLite → Swydo workflow állapota
+
+`NNBKixcUSEjSDiyl`, aktív, hónap 1-jén 7:00. Három ház, házanként saját credential
+és saját Google Sheet (két lap: `Kampányok`, `Lista-egészség`). A Swydo ebből a
+Sheetből olvassa a hírlevél-blokkot.
+
+**Működik.** A 2026. júliusi NP számok adatra egyeznek a Swydo PDF-fel:
+Cold 2328 / 68 / 2,92% / 24 / 1,03%, Engaged 512 / 223 / 43,55% / 14 / 2,73%.
+
+### Javítva 2026-08-28-án
+
+**Az `Aktív feliratkozók (összesen)` mind a három háznál, minden hónapban 0 volt** —
+és mivel a `Nettó növekedés (%)` ezzel oszt, az is végig 0 lett. Ok: a hívás
+`limit=1`-gyel ment, a MailerLite viszont **csak `limit=0` esetén adja vissza a
+`total` mezőt**. Egy paraméter.
+
+```
+GET https://connect.mailerlite.com/api/subscribers?filter[status]=active&limit=0
+→ { "total": 2773 }
+```
+
+Teszt után: NP 2773, CK 2020, TC 1369. Keresztbe stimmel a júliusi kiküldési
+darabszámokkal (NP 2328+512, CK 1539+515, TC 1207+211).
+
+Ugyanekkor bekötve a közös `Hibariasztás` workflow is (`errorWorkflow`).
+
+### Ami még nyitott
+
+- **Duplikált sorok a Sheetekben.** Az április NP-nél és CK-nál 3×, az NP
+  lista-egészség lapján szintén 3× szerepel. Fejlesztés közbeni tesztfutások
+  maradványa (`append` mód, nincs dedup). Ügyfél felé menő adat, ezért a törlés
+  **nem gépi feladat** — kérdezz.
+- **Nincs lapozás.** A `Feliratkozó aktivitás` `limit=1000`-rel kér, az NP listája
+  viszont 3297 fős volt áprilisban. Az `Új feliratkozók` / `Leiratkozók` tehát csak
+  egy részhalmazból számol. A CK 2026-05 „302 új" és a TC 2026-06 „207" lehet valódi
+  import, de lehet ennek a műterméke is — amíg nincs lapozás, ezt nem tudjuk.
+- A CK node-jain **két MailerLite credential** lóg (`Mailerlite API CK`
+  httpHeaderAuth + `Mailerlite_API_CK` httpBearerAuth). A node a headert használja,
+  a bearer holt teher.
