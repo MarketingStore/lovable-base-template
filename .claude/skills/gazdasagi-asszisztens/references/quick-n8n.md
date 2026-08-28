@@ -226,9 +226,17 @@ Három szabály védi a számot:
 2. **Részleges számlázásnál a különbözetet vetítjük.** Az ERSTE három központja egy
    partner alatt, három számlán fut — ha csak kettő megy ki, a harmadik így nem esik ki
    a cashflow-ból.
-3. **Eltérés-jelzés.** Az `elteres_szazalek` a lista összegét a partner legutóbbi
-   tényleges havidíjához méri; 10% felett a dashboard és a levél megjelöli a sort.
-   Ez fogja meg, ha a lista elavul — a kézi lista fő kockázata pontosan ez.
+3. **Eltérés-jelzés.** Az `elteres_szazalek` akkor szól, ha a listás összeg az utolsó
+   3 hónap **tényleges tartományán kívül** esik; 10% felett a dashboard és a levél
+   megjelöli a sort. Ez fogja meg, ha a lista elavul — a kézi lista fő kockázata ez.
+
+   Fontos, hogy **nem középértékhez** mérünk. A Havidíj soron több ügyfélnél média- és
+   projektköltség is fut: az ERSTE havi összege 3,3 és 6,1 M között mozog, ott bármelyik
+   átlag vagy medián naponta hamisan riasztana. A tartományon kívüliség viszont azt
+   jelenti, hogy a lista egyetlen friss hónappal sem fér össze — az már valódi jel.
+   Két hónapnál kevesebb előzményből egyáltalán nem jelzünk: egy hónapba gyakran
+   belekerül egyszeri tétel a havidíjon felül. Egy naponta villogó hamis riasztás
+   pontosan azt a bizalmat őrli fel, amiért a jelzés készült.
 
 **Korábban 3 havi mediánt használtunk** (a QUiCK-beli számlák alapján), mert nem volt
 lista. Ha valaha vissza kell térni rá: az átlag ott rossz választás, mert egy kiugró
