@@ -90,10 +90,11 @@ python3 scripts/otp_osszevetes.py --kivonat 222.xml 239.xml --quick q.json
 ```
 
 **A hiány zöme a bankkártyás terheléseknél van**, nem a beérkező számlák között: a
-külföldi SaaS és hirdetés számláját a szolgáltató fiókjából kell letölteni. Az OTP
-számlatörténet XML-jét (camt.052) az `otp_osszevetes.py` veti össze a QUiCK-kel, és a
-**`references/beszerzesi-regiszter.json`** mondja meg, melyik terhelés melyik
-szállítóé és hol szerezhető be a számlája.
+külföldi SaaS és hirdetés számláját a szolgáltató fiókjából kell letölteni. Ezt az
+„OTP kivonat összevetés" workflow figyeli — egyetlen dolgot vár tőled, hogy az OTP
+*Számlatörténet → XML* letöltés a `0Könyvelési anyag` mappába kerüljön. Ugyanez kézzel
+az `otp_osszevetes.py`-jal megy. Hogy melyik terhelés melyik szállítóé és hol
+szerezhető be a számlája: **`references/beszerzesi-regiszter.json`**.
 
 A fájlnévben lévő dátum a **teljesítés dátuma** (`fulfilled_at`), nem a számla kelte.
 Kézi pótlásnál a szkript névtisztítója bitre ugyanaz, mint a workflow-é, hogy a pótolt

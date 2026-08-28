@@ -93,10 +93,17 @@ számla a QUiCK-ben**. Vagyis a kártyás forgalom több mint fele hiányzott.
 
 ### Hogyan lehet ezt megnézni
 
-Az OTP netbankban a **Számlatörténet → XML** letöltés camt.052 formátumot ad, ami
-gépi olvasású — és bármikor lehívható, nem kell megvárni a hónap zárását. (A PDF
-bankszámlakivonat erre nem jó.) Mindkét számlához külön kell letölteni:
-`11735184-20000222` és `11735184-20000239`.
+Ez is gépesítve van: az **„OTP kivonat összevetés"** workflow (1-jén és 15-én 8:00)
+elolvassa a `0Könyvelési anyag` mappába feltöltött XML-eket, és kiküldi a listát.
+**Egyetlen dolog kell hozzá tőled:** az OTP netbankban a *Számlatörténet → XML*
+letöltés, mindkét számlához (`11735184-20000222` és `11735184-20000239`), és a fájlt
+a `0Könyvelési anyag` mappába kell tenni. Ez bármikor lehívható, nem kell megvárni a
+hónap zárását — és a PDF bankszámlakivonat erre nem jó, mert nem gépi olvasású.
+
+A riport annyit lát, amennyi XML a mappában van. Ha nem frissíted, az ütemezett futás
+a régi időszakról szól, ezért a levél tárgyában ott a kivonat dátumtartománya.
+
+Kézzel, soron kívül ugyanez:
 
 ```bash
 python3 scripts/otp_osszevetes.py --kivonat 222.xml 239.xml --quick quick_havi.json
@@ -116,7 +123,9 @@ kilistázza — **azt fel kell venni**, különben legközelebb is átcsúszik.
 
 - **A darabszám akkor is elárul valamit, ha a név stimmel.** Augusztusban az
   Anthropic 11 kártyás terheléséhez 4 QUiCK-tétel tartozott, az Adobe 4-hez 2. A
-  szállító tehát „megvan", de a számlák fele nincs.
+  szállító tehát „megvan", de a számlák fele nincs. Ezért megy a párosítás
+  egy-az-egyhez: minden terhelés *egy* konkrét számlát foglal le a saját dátumától
+  ±10 napra, és egy lefoglalt számla nem fedhet le két terhelést.
 - **Az árfolyam hiányozhat.** A két augusztusi Adobe-tétel 66 Ft-tal szerepel a
   QUiCK-ben (65,54 EUR, átváltás nélkül), miközben a bankon 24 158 és 24 254 Ft
   ment le. Devizás tételnél mindig nézd meg, hogy a HUF-érték hihető-e.

@@ -133,6 +133,7 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 |---|---|---|---|
 | Havi könyvelési csomag | `KjnN4YdHTM1fqwxs` | aktív | **1-jén 7:00** |
 | Hiányzó számlák riport | `9mlVyJGpvXiDP7A3` | aktív | 1-jén és 15-én 6:00 |
+| OTP kivonat összevetés | `zG1CrSLeupNQXlsS` | aktív | 1-jén és 15-én 8:00 |
 | Hibariasztás | `Re169p6OL4fWiz1c` | aktív | Error Trigger |
 | Napi pénzügyi pozíció | `fnBQVW5vfmOlCg0f` | aktív | naponta 7:30 |
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
@@ -250,6 +251,62 @@ VAGYONBEFEKTETŐ BANK" ugyanaz a szállító két néven.
 
 Az első futás (2026-08-28) eredménye: 2026-07-re 133 tétel, **1** hiányzó visszatérő
 szállító (Kreatív Kontroll Kft), 0 számlakép nélküli tétel; 2026-08-ra további **15**.
+
+### OTP kivonat összevetés — mit csinál pontosan
+
+`zG1CrSLeupNQXlsS`, 12 node, aktív. Ez az egyetlen workflow, aminek **külső input kell**:
+a `0Könyvelési anyag` mappába feltöltött OTP számlatörténet XML. Ha nincs ott XML, a
+`Fajlok szetbontasa` node beszélő hibaüzenettel elszáll, és a Hibariasztás szól.
+
+A lánc: `Ho 1-en 8:00` / `Ho 15-en 8:00` / `Kezi inditas` → `Kivonat fajlok` (Drive
+API listázás) → `Fajlok szetbontasa` → `Kivonat letoltese` (`?alt=media`, szövegként) →
+`XML olvasas` → `Tetelek` → `QUiCK tetelek` → `Regiszter` → `Osszevetes` →
+`Osszevetes email`.
+
+**A formátum camt.052.** Az OTP netbankban a *Számlatörténet → XML* ad ilyet, és
+bármikor lehívható — nem kell megvárni a hónap zárását. A PDF bankszámlakivonat nem
+használható. A fájlnév a hónapot félrevezetően jelöli (a 2026 augusztusi letöltés
+neve `222_202607.xml`), ezért az időszakot **mindig az XML `FrToDt` mezőjéből** vesszük,
+soha nem a névből — ez megy a levél tárgyába is, hogy egy elavult futás azonnal
+látszódjon a postaládában.
+
+**Amit a camt-ból tudni kell.** A `Sts=PDNG` (függő) kártyás tételnek **nincs
+könyvelési dátuma**: üres a `BookgDt` és a `ValDt` is, a dátum csak a
+`RltdDts/TxDtTm` mezőben van. Enélkül hét augusztusi tétel dátum nélkül maradt volna,
+és kiesett volna a párosításból. A sorrend tehát: `BookgDt/Dt` → `ValDt/Dt` →
+`RltdDts/TxDtTm` → a kivonat záró dátuma.
+
+**A párosítás egy-az-egyhez.** Minden kártyás terhelés lefoglal *egy* konkrét, még fel
+nem használt QUiCK-tételt a saját dátumától ±10 napra. A két korlát külön-külön
+fontos:
+
+- **±10 nap, nem „ugyanaz a hónap".** A 07-31-i teljesítésű számlát 08-03-án
+  terhelik, azt el kell fogadni. Egy egész hónapnyi ablak viszont túl megengedő: egy
+  júliusi Semrush-számla elfedné az augusztusi terhelést. Az első verzió pont ezt
+  csinálta, és 34 helyett csak 14 hiányt talált.
+- **Foglalás, nem darabszám-egyezés.** Enélkül egyetlen Anthropic-számla eltakarna
+  tizenegy Anthropic-terhelést. 2026 augusztusában valóban 11 terhelés állt 4 számlával
+  szemben.
+
+Az **átutalásoknál** más a logika: ott a közlemény tartalmazza a számlaszámot
+(`SZA02024/2026`, `BM-2026-16`, `26/1472`), tehát a QUiCK `invoice_number` mezőjével
+párosítunk, és csak másodsorban partnernévvel. A `Regiszter` node `nem_szamla` blokkja
+szűri ki azt, amihez eleve nincs szállítói számla: NAV, MFB, bér, saját számlák közötti
+átvezetés, készpénzfelvételi díj.
+
+**A `Regiszter` node a `references/beszerzesi-regiszter.json` tükörképe** — ha az
+egyiket módosítod, a másikat is kell. Ez a lista mondja meg, hogy a bank leírója
+(`FACEBK *H2CNWWRE32`) melyik szállító, mi a QUiCK-beli neve, és hol szerezhető be a
+számlája. Amire nincs minta, azt a levél külön szakaszban listázza — azt fel kell venni,
+különben legközelebb is átcsúszik.
+
+Az első futás (2026-08-28, a 2026-08-01…28 időszakra, két számlára): 154 banki tétel,
+ebből **63 kártyás** 1 428 173 Ft-ért; **34 terheléshez nem volt számla** a QUiCK-ben
+887 952 Ft értékben, 29-nek megvolt a párja, ismeretlen leíró 0.
+
+**Ismert korlát:** a riport annyit lát, amennyi XML a mappában van. Ha nem frissíted,
+az ütemezett futás a régi időszakról szól — ezért van a levél tárgyában és fejlécében
+is ott a kivonat dátumtartománya.
 
 ### Napi pénzügyi pozíció — mit csinál pontosan
 

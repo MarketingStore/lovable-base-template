@@ -21,6 +21,7 @@ A `--quick` elhagyható: akkor csak a kivonatot bontja tételekre és összesít
 """
 
 import argparse
+import datetime
 import json
 import os
 import re
@@ -28,6 +29,10 @@ import sys
 import unicodedata
 import xml.etree.ElementTree as ET
 from collections import defaultdict
+
+# A terhelést a saját dátumától +-10 napra keressük a QUiCK-ben: a 07-31-i számlát
+# 08-03-án terhelik, de egy hónappal korábbit már nem fogadunk el párnak.
+ABLAK = 10
 
 REGISZTER = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          '..', 'references', 'beszerzesi-regiszter.json')
@@ -64,11 +69,18 @@ def kivonat_beolvas(fajl):
             dbtr = szoveg(td, 'RltdPties/Dbtr/Nm')
             kozl = ' '.join(x.text.strip() for x in td.findall('RmtInf/Ustrd') if x.text)
         irany = szoveg(n, 'CdtDbtInd')
+        # A függő (PDNG) kártyás tételnek még nincs könyvelési dátuma, csak tranzakciós.
+        datum = (szoveg(n, 'BookgDt/Dt') or szoveg(n, 'ValDt/Dt')
+                 or (szoveg(td, 'RltdDts/TxDtTm')[:10] if td is not None else '') or ig)
+        ee = n.find('AmtDtls/CntrValAmt/Amt')
         sorok.append({
             'szamla': szamla,
-            'datum': szoveg(n, 'BookgDt/Dt'),
+            'datum': datum,
             'osszeg': float(ae.text) if ae is not None and ae.text else 0.0,
             'devizanem': ae.get('Ccy') if ae is not None else '',
+            'statusz': szoveg(n, 'Sts'),
+            'eredeti_osszeg': float(ee.text) if ee is not None and ee.text else 0.0,
+            'eredeti_deviza': ee.get('Ccy') if ee is not None else '',
             'irany': irany,
             'partner': cdtr if irany == 'DBIT' else dbtr,
             'kozlemeny': kozl,
@@ -116,25 +128,43 @@ def main():
         idoszakok.append('%s (%s..%s, %d tétel)' % (k['szamla'], k['tol'], k['ig'], len(k['tetelek'])))
         tetelek += k['tetelek']
 
-    quick_db = defaultdict(int)
+    # A QUiCK tételek szállítónként, dátummal — a párosítás egy-az-egyhez megy,
+    # tehát egy lefoglalt számla nem fedhet le két terhelést.
+    P = defaultdict(list)
     if a.quick:
         for sor in json.load(open(a.quick, encoding='utf-8'))['sorok']:
-            quick_db[normalizal(sor[0])] += 1
+            P[normalizal(sor[0])].append({'d': datetime.date.fromisoformat(sor[1][:10]),
+                                          'hasznalt': False})
 
-    def van_quick(nev):
-        if not nev:
-            return 0
+    def foglal(nev, datum):
+        """A terheléshez keres egy még szabad QUiCK-tételt +-ABLAK napon belül."""
+        if not nev or not datum:
+            return False
         n = normalizal(nev)
-        return sum(v for k, v in quick_db.items() if n in k or k in n)
+        d = datetime.date.fromisoformat(datum[:10])
+        jelolt, tav = None, None
+        for k, sorok in P.items():
+            if n not in k and k not in n:
+                continue
+            for x in sorok:
+                if x['hasznalt']:
+                    continue
+                t = abs((x['d'] - d).days)
+                if t <= ABLAK and (tav is None or t < tav):
+                    jelolt, tav = x, t
+        if jelolt is None:
+            return False
+        jelolt['hasznalt'] = True
+        return True
 
-    kt = [t for t in tetelek if kartyas(t)]
+    kt = sorted([t for t in tetelek if kartyas(t)], key=lambda x: x['datum'])
     megvan, hianyzik, ismeretlen = [], [], []
     for t in kt:
         leiro = normalizal(t['partner']) + normalizal(t['kozlemeny'])
         r = next((r for r in reg['szallitok'] if r['_n'] and r['_n'] in leiro), None)
         if r is None:
             ismeretlen.append(t)
-        elif a.quick and not van_quick(r['quick_nev']):
+        elif a.quick and not foglal(r['quick_nev'], t['datum']):
             hianyzik.append((t, r))
         else:
             megvan.append((t, r))
@@ -175,16 +205,14 @@ def main():
             print('  %-40s %2d db %12s  [%s] %s' %
                   (nev[:40], s['db'], ft(s['ossz']), s['r']['mod'], s['r']['forras']))
 
-        print('\n=== Van QUiCK-párja, de érdemes a darabszámot nézni ===')
-        agg2 = defaultdict(lambda: [0, 0.0, None])
+        print('\n=== Megvan a párja: %d db, %s ===' %
+              (len(megvan), ft(sum(t['osszeg'] for t, _ in megvan))))
+        agg2 = defaultdict(lambda: [0, 0.0])
         for t, r in megvan:
             agg2[r['szallito']][0] += 1
             agg2[r['szallito']][1] += t['osszeg']
-            agg2[r['szallito']][2] = r
-        for nev, (db, ossz, r) in sorted(agg2.items(), key=lambda i: -i[1][1]):
-            q = van_quick(r['quick_nev'])
-            jel = '  <-- eltérés' if q < db else ''
-            print('  %-40s kártya %2d db %12s | QUiCK %2d db%s' % (nev[:40], db, ft(ossz), q, jel))
+        for nev, (db, ossz) in sorted(agg2.items(), key=lambda i: -i[1][1]):
+            print('  %-40s %2d db %12s' % (nev[:40], db, ft(ossz)))
 
     if ismeretlen:
         print('\n=== A regiszterben nincs ilyen minta (vedd fel a regiszterbe): %d db ===' % len(ismeretlen))
