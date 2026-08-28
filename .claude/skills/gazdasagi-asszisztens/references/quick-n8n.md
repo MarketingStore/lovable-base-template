@@ -210,29 +210,31 @@ A workflow nem hibátlan forrás, ezért érdemes utána ellenőrizni:
 - **Részleges futás** — ha a letöltés vagy feltöltés közben elszáll, hézag marad a
   számozásban. Ezt a `szamla_rendez.py ellenoriz` elkapja.
 
-## Bevételtervezés: miért medián
+## Bevételtervezés: a szerződéses havidíjlista
 
-A fix havidíjak előrevetítésénél az **utolsó 3 hónap mediánját** használjuk, nem az
-átlagot. Nem esztétikai döntés, két konkrét adat kényszeríti ki:
+A fix havidíjak előrevetítésének forrása a **`references/havidijak.json`** — 14 tétel,
+bruttó összeggel és a fizetési határidő napjával. Ugyanez a lista él a „Napi pénzügyi
+pozíció" workflow `Havidij elorejelzes` node-jában; **ha az egyiket módosítod, a
+másikat is kell**, különben a dashboard és a skill mást mond.
 
-- **Kiugró hónap.** A Hafner Pneumatika havidíja 530 860, de 2026 májusában
-  3 602 269 Ft-ot számláztunk nekik. Hathavi átlag: 1 042 062 — majdnem a duplája a
-  valóságnak. Medián: 530 860, pontos.
-- **Lépcsőváltás.** A HDF és a Solar Konstrukt díja 2026 júniusában feleződött
-  (1 285 240 → 810 260, illetve 1 645 920 → 822 960). A hathavi medián a régi és az
-  új közé esik, vagyis **mindkét irányban téves**. Három hónapból viszont a második
-  azonos érték után már az új díjat adja — a lépcsőt egy hónap késéssel követi.
+Három szabály védi a számot:
 
-A teljesítési nap és a fizetési futamidő ugyanígy medián. A szórást
-(`szoras_szazalek`) visszaadjuk, hogy az ingadozó sorok — pl. az ERSTE, ahol a havi
-összeg 2,6 és 7,9 M között mozog — láthatóan meg legyenek jelölve.
+1. **Amire már van kiállított számla, azt nem vetítjük.** A párosítás a QUiCK
+   partnernevén és a *fizetési határidő* hónapján megy. Ez nem elméleti védelem: 2026
+   augusztus végén a 14-ből négy tételnek (CSL, Infineon, Beta, Danubius) már megvolt
+   a szeptemberi számlája, mert ezeket előre kiállítjuk.
+2. **Részleges számlázásnál a különbözetet vetítjük.** Az ERSTE három központja egy
+   partner alatt, három számlán fut — ha csak kettő megy ki, a harmadik így nem esik ki
+   a cashflow-ból.
+3. **Eltérés-jelzés.** Az `elteres_szazalek` a lista összegét a partner legutóbbi
+   tényleges havidíjához méri; 10% felett a dashboard és a levél megjelöli a sort.
+   Ez fogja meg, ha a lista elavul — a kézi lista fő kockázata pontosan ez.
 
-Három szabály zárja ki a hamis pozitívokat:
-
-1. **Legalább 3 hónap előzmény** — új ügyfél nem tervezhető, csak a harmadik hónaptól.
-2. **Két hónapnál régebbi utolsó számla = megszűnt szerződés**, nem vetítjük előre.
-3. **Amire már van számla, azt nem vetítjük** — különben duplázna a kintlévőséggel.
-   Ez gyakoribb, mint hinnéd: a CSL szeptemberi havidíját már augusztusban kiállítjuk.
+**Korábban 3 havi mediánt használtunk** (a QUiCK-beli számlák alapján), mert nem volt
+lista. Ha valaha vissza kell térni rá: az átlag ott rossz választás, mert egy kiugró
+hónap (a Hafner 2026 májusában 3 602 269 Ft-ot számlázott a szokásos 530 860 helyett)
+elviszi, a hosszabb átlag pedig elmaszatolja a díjváltozást (a HDF és a Solar díja
+2026 júniusában feleződött).
 
 ## Ha új workflow-t építesz
 

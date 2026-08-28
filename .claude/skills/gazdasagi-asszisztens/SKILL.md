@@ -117,6 +117,9 @@ Számlázz.hu-ban állítjátok ki a számlákat. A skill nem állít ki száml�
 **előkészíti**: összeszedi, kinek mit kell számlázni, ellenőrzi a fedezetet (van-e
 TIG, stimmel-e az összeg), és ad egy átnézhető táblát.
 
+A **fix havidíjak** listája (ügyfél, bruttó, fizetési határidő napja):
+`references/havidijak.json` — ez adja a dashboard 30 napos bevétel-előrejelzését is.
+
 Négyféle számlázási tétel fordul elő: havi fix retainer, projektalapú, továbbszámlázás
 és média-költségkeret. Mindegyik más ellenőrzést kíván — részletek:
 **`references/szamlazas.md`**.

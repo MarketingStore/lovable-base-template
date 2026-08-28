@@ -1,0 +1,34 @@
+{
+  "_megjegyzes": [
+    "Szerződéses havidíjak. Forrás: Havidíjak.xlsx (2026-08-27, Kurucsai János).",
+    "Ez a lista adja a Gazdaság dashboard 30 napos cashflow-előrejelzésében a még ki",
+    "nem állított havidíjakat. UGYANEZ a lista él a 'Napi pénzügyi pozíció' n8n",
+    "workflow 'Havidij elorejelzes' node-jában - ha itt módosítasz, ott is módosítsd,",
+    "különben a dashboard és a skill mást mond.",
+    "",
+    "nap = a FIZETÉSI HATÁRIDŐ napja, nem a számlázásé. A listából öt tétel pontosan",
+    "egyezik a QUiCK-ben megfigyelt határidővel (Hafner 23., HDF 28., Brill 9.,",
+    "Prospera 28., Danubius 5.), ezért olvassuk így.",
+    "",
+    "quick = a QUiCK-beli partnernév. Ezzel párosítjuk a már kiállított számlákat,",
+    "hogy ne duplázzunk. Két helyen tér el a köznapi névtől: a három ERSTE-központ",
+    "egy partner alatt fut, az Infineon pedig Kolibri Pictures néven számláz."
+  ],
+  "tetelek": [
+    { "nev": "Solar Konstrukt",     "quick": "Solar Konstrukt Kft.",        "netto":  648000, "brutto":  822960, "nap": 10 },
+    { "nev": "CSL Plasma",          "quick": "CSL Plasma Kft.",             "netto": 3440000, "brutto": 4368800, "nap": 10 },
+    { "nev": "Arcideál",            "quick": "Arcideál Kft.",               "netto":  738000, "brutto":  937260, "nap": 15 },
+    { "nev": "Hafner Pneumatika",   "quick": "Hafner Pneumatika Kft.",      "netto":  418000, "brutto":  530860, "nap": 23 },
+    { "nev": "HDF",                 "quick": "\"HDF\" KFT",                 "netto":  638000, "brutto":  810260, "nap": 28 },
+    { "nev": "NP — Napfény Park",   "quick": "ERSTE INGATLAN ALAP",         "netto":  845000, "brutto": 1073150, "nap": 25 },
+    { "nev": "CK — Corso Kaposvár", "quick": "ERSTE INGATLAN ALAP",         "netto": 1107000, "brutto": 1405890, "nap": 25 },
+    { "nev": "TC — Target Center",  "quick": "ERSTE INGATLAN ALAP",         "netto":  650000, "brutto":  825500, "nap": 25 },
+    { "nev": "Florin",              "quick": "FLORIN Zrt.",                 "netto": 1210000, "brutto": 1536700, "nap": 15 },
+    { "nev": "Beta",                "quick": "Beta Hungary Kft.",           "netto":   40000, "brutto":   50800, "nap":  5 },
+    { "nev": "Prospera Google Ads", "quick": "Prospera Europe Kft.",        "netto":  220000, "brutto":  279400, "nap": 28 },
+    { "nev": "Danubius",            "quick": "Danubius Hotels Zrt.",        "netto": 2040000, "brutto": 2590800, "nap":  5 },
+    { "nev": "Infineon",            "quick": "Kolibri Pictures Kft.",       "netto":  306000, "brutto":  388620, "nap":  6 },
+    { "nev": "Brill kozmetika",     "quick": "BRILL KOZMETIKA SZEGED Kft.", "netto":    4900, "brutto":    6223, "nap":  9 }
+  ],
+  "havi_brutto_osszesen": 15627223
+}
