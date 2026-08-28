@@ -71,8 +71,9 @@ adatot a „Napi pénzügyi pozíció" workflow írja a Supabase-be. Részletek:
 
 ### 1. Bejövő számlák
 
-A begyűjtés automatizált: a „Havi könyvelési csomag" workflow minden hónap 3-án
-letölti a QUiCK-ből az előző hónap számlaképeit és feltölti a havi Drive-mappába.
+A begyűjtés automatizált: a „Havi könyvelési csomag" workflow minden hónap **1-jén**
+letölti a QUiCK-ből az előző hónap számlaképeit és feltölti a havi Drive-mappába, a
+„Hiányzó számlák riport" pedig 1-jén és 15-én kiküldi, ki nem számlázott.
 **A feladat tehát az ellenőrzés, nem a gyűjtés.**
 
 A hiány két helyen keletkezhet, és a kettőt szét kell választani, mert más a teendő:
@@ -85,7 +86,14 @@ szállítót zaklatni felesleges. Folyamat és a visszatérő szállítók ellen
 python3 scripts/szamla_rendez.py ellenoriz --mappa <havi mappa>   # ép-e a köteg
 python3 scripts/szamla_rendez.py osszesito --mappa <mappa> --csv ossz.csv
 python3 scripts/szamla_rendez.py atnevez manifest.json --mappa <mappa> --szimulacio
+python3 scripts/otp_osszevetes.py --kivonat 222.xml 239.xml --quick q.json
 ```
+
+**A hiány zöme a bankkártyás terheléseknél van**, nem a beérkező számlák között: a
+külföldi SaaS és hirdetés számláját a szolgáltató fiókjából kell letölteni. Az OTP
+számlatörténet XML-jét (camt.052) az `otp_osszevetes.py` veti össze a QUiCK-kel, és a
+**`references/beszerzesi-regiszter.json`** mondja meg, melyik terhelés melyik
+szállítóé és hol szerezhető be a számlája.
 
 A fájlnévben lévő dátum a **teljesítés dátuma** (`fulfilled_at`), nem a számla kelte.
 Kézi pótlásnál a szkript névtisztítója bitre ugyanaz, mint a workflow-é, hogy a pótolt
@@ -134,6 +142,7 @@ mondd meg konkrétan, mi hiányzik, kitől kell bekérni, és mi az, ami emiatt 
 Ne hallgasd el, hogy egy TIG-hez nincs meg az összeg.
 
 **Írd vissza, amit megtudsz.** Az ügyfélregiszter (`references/ugyfelek.json`), a
+beszerzési regiszter (`references/beszerzesi-regiszter.json`), a
 szállítólista (`references/szamlabegyujtes.md`) és a QUiCK-leírás
 (`references/quick-n8n.md`) szándékosan bővíthető. Ha új ügyfél lép be, új API-végpont
 derül ki, vagy változik egy workflow, frissítsd a fájlt — ez a skill memóriája, és

@@ -111,27 +111,44 @@ Mezők: `month`, `amount`, `paid_status` — **`due_at` nincs**. Két csapda van
    becsüljük — a becsült sorokat mindig **jelölni kell** (`becsult: true`), és a hónap
    elején, amikor jön a bérszámfejtés tényadata, felülírja őket a valós sor.
 
-## A négy meglévő workflow
+**`GET /1/accounts/` és `GET /1/payments/`** — bankszámlák és kifizetések
+
+A `/1/payments/` a **már rögzített számlák kiegyenlítését** adja vissza: `{id, date,
+transactions[], account}`, a tranzakciókon `expense_id`, `amount`, `partner`,
+`currency`, `invoice_number`, `exchange_rate`. Szűrhető `?from_date=&to_date=`
+paraméterrel. 2026 augusztusában 1020 kifizetés, 2966 tranzakció, 2022-08-24-től
+2026-08-26-ig, ebből 656 devizás.
+
+**A lényeg, amiért ez fontos: `expense_id` nélküli tranzakció 0 db van.** Vagyis ez
+nem a banki forgalom, hanem a QUiCK-ben *már meglévő* számlák kifizetési naplója.
+Amiről nincs számla a QUiCK-ben, arról itt sincs sor — tehát **hiányzó számlát ebből
+az endpointból elvileg sem lehet felderíteni**. Nyers bankitranzakció-végpont nincs:
+`/1/transactions/`, `/1/bank-transactions/`, `/2/transactions/` mind 404.
+
+Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OTP-összevetést.
+
+## A meglévő workflow-k
 
 | Név | ID | Állapot | Ütemezés |
 |---|---|---|---|
-| Havi könyvelési csomag | `KjnN4YdHTM1fqwxs` | aktív | 3-án 7:00 |
+| Havi könyvelési csomag | `KjnN4YdHTM1fqwxs` | aktív | **1-jén 7:00** |
+| Hiányzó számlák riport | `9mlVyJGpvXiDP7A3` | aktív | 1-jén és 15-én 6:00 |
 | Hibariasztás | `Re169p6OL4fWiz1c` | aktív | Error Trigger |
 | Napi pénzügyi pozíció | `fnBQVW5vfmOlCg0f` | aktív | naponta 7:30 |
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
 | QUiCK API felderítés | `0wPY8RdQvAF0iETH` | inaktív | kézi |
 
-**Mielőtt bármelyiket elindítod:** a három aktív workflow mellékhatással jár — kettő
+**Mielőtt bármelyiket elindítod:** az aktív workflow-k mellékhatással járnak — három
 e-mailt küld, egy Drive-ra ír és mappát hoz létre. Ne futtasd őket próbaképp. A
 felderítő workflow viszont read-only GET, azt nyugodtan lehet, ha az API válaszának
 szerkezetére vagy kíváncsi.
 
 ### Havi könyvelési csomag — mit csinál pontosan
 
-`KjnN4YdHTM1fqwxs`, 10 node, aktív. Ez állítja elő a `0Könyvelési anyag/Konyveles
+`KjnN4YdHTM1fqwxs`, 17 node, aktív. Ez állítja elő a `0Könyvelési anyag/Konyveles
 ÉÉÉÉ-HH` mappát, nyomtatásra rendezett számlaképekkel.
 
-Két indítója van: **`Ho 3-an 7:00`** (havonta, 3-án 07:00) és **`Kezi inditas`**.
+Két indítója van: **`Ho 1-en 7:00`** (havonta, 1-jén 07:00) és **`Kezi inditas`**.
 Mindkettő ugyanoda fut be, tehát kézzel bármikor újrafuttatható — de lásd lentebb,
 hogy ennek van egy csapdája.
 
@@ -186,20 +203,53 @@ második kimenetéről `Osszegzes` → `Osszegzo email`.
   megváltozik**. A workflow ilyenkor szándékosan nem tölt fel semmit, hanem jelez —
   különben a régi fájlok mellé kerülne egy eltolt nevű, teljes második készlet.
   Ilyenkor a mappát ki kell üríteni és újra kell futtatni.
-- **A 3-a után rögzített számla kimarad.** Ez nem elméleti: 2026 augusztus végén a
-  júliusi csomagból **öt számla hiányzott**, mind augusztus 3. után került a QUiCK-be
+- **Az 1-je után rögzített számla kimarad.** Ez nem elméleti: 2026 augusztus végén a
+  júliusi csomagból **öt számla hiányzott**, mind a futás után került a QUiCK-be
   (FHU Kamil Grzonkowski 07-05, Interhurt 07-06, Debreceni Campus 07-15 és 07-26,
-  PRINTDEKOR 07-30). Érdemes a hónap közepén egyszer újrafuttatni.
+  PRINTDEKOR 07-30). Érdemes a hónap közepén egyszer újrafuttatni — az újrafuttatás
+  a `Meglevo fajlok` / `Parositas` páros miatt már nem duplikál, hanem pótol.
+  **Az ütemezés 2026 augusztusában került 3-áról 1-jére**, mert a könyvelő egyre
+  gyakrabban már 2-án jön az anyagért. Ez egy nappal rövidebb ablakot hagy az utólag
+  érkező számláknak, tehát a hónap közepi futtatás most fontosabb, mint korábban.
 - **10 oldal = 2000 tétel a plafon.** Túllépésnél csendben csonkulna, ezért az
   összegzés külön jelzi, ha a lekérés elérte a korlátot.
 - **Hibáról a Hibariasztás szól.** Az összegző levél a sikeres futás végén megy ki;
   ha a workflow félúton elszáll, arról a közös hibakezelő értesít (lásd lentebb).
 - **`has_artifact=false` némán kimarad** — a tétel a QUiCK-ben ott van, csak kép nincs
   hozzá. Ez nem a szállítón múlik, tehát nem bekérni kell, hanem a képet pótolni.
-- **10 oldal = 2000 tétel a plafon.** Jelenleg bőven elég, de túllépésnél csendben
-  csonkulna.
-- **A 3-a után rögzített számla kimarad.** A futás egyszeri; ami később kerül be a
-  QUiCK-be, az a már elkészült csomagba nem kerül bele.
+
+### Hiányzó számlák riport — mit csinál pontosan
+
+`9mlVyJGpvXiDP7A3`, 6 node, aktív. Ez az a riport, ami **csak a QUiCK-ből** dolgozik,
+tehát nem kell hozzá se kivonat, se emberi input.
+
+Három indító: **`Ho 1-en 6:00`**, **`Ho 15-en 6:00`** és `Kezi inditas`. Mindhárom a
+`Hat honap tetelei` HTTP node-ba fut (`/2/expenses/`, hat hónapra visszamenőleg,
+`executeOnce`, 15 oldal lapozási korláttal), onnan a `Hianyelemzes` code node, végül
+a `Riport email`.
+
+Az elv egy mondatban: **aki a célhónap előtti mindhárom hónapban számlázott, de a
+célhónapban nem, az gyanús.** A levél három szakasza:
+
+1. **Az előző hónapból hiányzik** — ez a sürgős, mert a könyvelői anyag emiatt
+   hiányos. Szállítónként megadja a szokásos összeg *tartományát* (min–max az előző
+   három hónapból), nem egy középértéket — ugyanaz az indoklás, mint a havidíjaknál:
+   a hirdetési és projektköltséget is vivő sorok szórása akkora, hogy az átlag
+   félrevezetne.
+2. **A tárgyhóból még hiányzik** — korai jelzés, csak a hónap 10-e után jelenik meg
+   (előtte minden szállító „hiányozna", ami tiszta zaj). Az 1. szakaszban már
+   felsorolt szállítók itt nem ismétlődnek.
+3. **A QUiCK-ben megvan, de nincs számlakép** — ezeket nem bekérni kell, hanem a
+   képet pótolni. Külön szakasz, mert a két teendő nem ugyanaz (lásd
+   `szamlabegyujtes.md`).
+
+Ismert korlátja: **a partnert a QUiCK-beli név azonosítja.** Ha egy szállító neve
+megváltozik, a régi néven hiányzóként jelenik meg, az új néven meg nem visszatérőként.
+Ez nem elméleti — 2026 augusztusában a „MERKANTIL BANK Zrt." és a „MERKANTIL VÁLTÓ ÉS
+VAGYONBEFEKTETŐ BANK" ugyanaz a szállító két néven.
+
+Az első futás (2026-08-28) eredménye: 2026-07-re 133 tétel, **1** hiányzó visszatérő
+szállító (Kreatív Kontroll Kft), 0 számlakép nélküli tétel; 2026-08-ra további **15**.
 
 ### Napi pénzügyi pozíció — mit csinál pontosan
 

@@ -3,9 +3,15 @@
 ## A folyamat már automatizált
 
 A havi könyvelési mappát a **„Havi könyvelési csomag"** n8n workflow állítja elő
-minden hónap 3-án 7:00-kor: a QUiCK-ből letölti az előző hónap teljesítés szerinti
-számlaképeit, sorszámozza, és feltölti a `0Könyvelési anyag/Konyveles ÉÉÉÉ-HH`
-mappába. Részletek: `quick-n8n.md`.
+minden hónap **1-jén** 7:00-kor: a QUiCK-ből letölti az előző hónap teljesítés
+szerinti számlaképeit, sorszámozza, és feltölti a `0Könyvelési anyag/Konyveles
+ÉÉÉÉ-HH` mappába. Részletek: `quick-n8n.md`.
+
+A hiánykeresés első körét szintén gép végzi: a **„Hiányzó számlák riport"** minden
+1-jén és 15-én kiküldi, mely visszatérő szállító nem számlázott, és mely tételnek
+nincs számlaképe. Amit lentebb kézzel is le lehet ellenőrizni, azt a levél már
+tálcán hozza — a kézi menet arra való, hogy a levél állítását ellenőrizd, vagy
+hogy hónap közben, soron kívül nézz utána valaminek.
 
 Ebből következik, hogy **a feladat nem a begyűjtés, hanem az ellenőrzés**: a gépi
 köteg teljes-e, és ami hiányzik, az miért hiányzik. A hiány két helyen keletkezhet,
@@ -22,7 +28,7 @@ megvan.
 
 ## A havi ellenőrzés menete
 
-**1. Nézd meg, lefutott-e a workflow.** A hónap 3-a után lennie kell friss
+**1. Nézd meg, lefutott-e a workflow.** A hónap 1-je után lennie kell friss
 `Konyveles ÉÉÉÉ-HH` mappának. Ha nincs, nézd meg az n8n futástörténetét.
 
 **2. Ellenőrizd a köteg épségét.**
@@ -73,6 +79,51 @@ bitre ugyanúgy, mint a workflow.
 Figyelem: az `atnevez` 001-től újraszámoz. Meglévő köteg közepére beszúráshoz vagy az
 egész mappát add meg neki, vagy a `--kezdo` kapcsolóval folytatólagos sorszámot adj —
 és utána mindig futtass `ellenoriz`-t.
+
+## A kártyás terhelések — itt van a hiány zöme
+
+A visszatérő szállítók listája (lentebb) csak azt fogja meg, ami **korábban már
+bekerült** a QUiCK-be. A valódi vakfolt máshol van: a **bankkártyás terhelések**.
+Ezekről a külföldi szolgáltató nem küld semmit magától — a számlát a fiókjából kell
+letölteni, és amíg valaki le nem tölti, addig a költség csak a bankszámlán látszik.
+
+Mennyiről van szó: 2026 augusztusában a két OTP-számlán **63 kártyás terhelés** futott
+1 428 173 Ft értékben, és ebből **25 tételhez, 744 669 Ft-ért nem volt semmilyen
+számla a QUiCK-ben**. Vagyis a kártyás forgalom több mint fele hiányzott.
+
+### Hogyan lehet ezt megnézni
+
+Az OTP netbankban a **Számlatörténet → XML** letöltés camt.052 formátumot ad, ami
+gépi olvasású — és bármikor lehívható, nem kell megvárni a hónap zárását. (A PDF
+bankszámlakivonat erre nem jó.) Mindkét számlához külön kell letölteni:
+`11735184-20000222` és `11735184-20000239`.
+
+```bash
+python3 scripts/otp_osszevetes.py --kivonat 222.xml 239.xml --quick quick_havi.json
+```
+
+A `--quick` a QUiCK havi listája; ezt a „QUiCK API felderítés" workflow adja
+(a token nem olvasható ki, ezért csak n8n-en át szerezhető meg).
+
+A szkript a **`references/beszerzesi-regiszter.json`** alapján fordítja le a bank
+leíróját szállítóra: a `FACEBK *H2CNWWRE32` a Metáé, az `ANTHROPIC* CLAUDE SUB` a
+Claude.ai-é, a `PADDLE.NET* TIMEDOCTOR` a Paddle-é. A regiszter minden tételnél
+megadja, **hol szerezhető be** a számla (`forras`), és milyen módon (`portal`,
+`email`, `helyszini`). Ha egy terhelésre nincs minta a regiszterben, a szkript külön
+kilistázza — **azt fel kell venni**, különben legközelebb is átcsúszik.
+
+### Amire figyelni kell
+
+- **A darabszám akkor is elárul valamit, ha a név stimmel.** Augusztusban az
+  Anthropic 11 kártyás terheléséhez 4 QUiCK-tétel tartozott, az Adobe 4-hez 2. A
+  szállító tehát „megvan", de a számlák fele nincs.
+- **Az árfolyam hiányozhat.** A két augusztusi Adobe-tétel 66 Ft-tal szerepel a
+  QUiCK-ben (65,54 EUR, átváltás nélkül), miközben a bankon 24 158 és 24 254 Ft
+  ment le. Devizás tételnél mindig nézd meg, hogy a HUF-érték hihető-e.
+- **Az átutalások más eset.** Ott a közlemény jellemzően tartalmazza a számlaszámot
+  (`SZA02024/2026`, `BM-2026-16`, `26/1472`), tehát a QUiCK `invoice_number` mezőjével
+  pontosan párosíthatók — nem névre kell illeszteni. Az adó-, bér-, hitel- és saját
+  számlák közötti átvezetéseket a regiszter `nem_szamla` blokkja szűri ki.
 
 ## Visszatérő szállítók
 
