@@ -202,6 +202,36 @@ Javítva:
 írással). Ez a saját kezünkben lévő rész a torlódásból — ha újra előfordul, az egyiket
 el kell tolni.
 
+### A nyomtatható PDF blokkolta a saját workflow-ját
+
+A fenti javítás után a pótló futás **egyetlen fájlt sem töltött fel**, és azt írta,
+hogy „A SZÁMOZÁS ELCSÚSZOTT". Nem csúszott el semmi — a `Parositas` védelme sült el
+tévesen:
+
+A workflow a nyomtatható PDF-et **ugyanabba a mappába** tölti, amit a következő futás
+`Meglevo fajlok` node-ja átnéz. A `Konyveles 2026-08 nyomtathato (71 iv, ...).pdf`
+nem illeszkedik a `NNN_dátum_partner` mintára, tehát „idegen" fájlnak számít — a
+védelem pedig egyetlen idegen fájlra is leállítja az egész feltöltést.
+
+Vagyis **a workflow saját kimenete tette lehetetlenné minden későbbi futását.** Az
+első futáskor még nem látszik: a PDF a lánc végén készül, a `Meglevo fajlok` viszont
+az elején fut. Csak a MÁSODIK futásnál üt be — pont akkor, amikor pótolni akarnál.
+
+Javítás: a `Meglevo fajlok` Drive-lekérése kihagyja a saját kimenetét:
+
+```
+'<mappa_id>' in parents and trashed = false and not name contains 'nyomtathato'
+```
+
+**A védelem szándéka megmarad** — az elcsúszott sorszámú számlafájlok továbbra is
+`NNN_`-nel kezdődnek, tehát azokat elkapja.
+
+**Kikapcsolt Code node átereszt, nem szakít.** A pótláshoz kikapcsoltam a
+`Nyomtathato lista` node-ot, hogy ne készüljön duplikált PDF — mire a `Nyomtathato
+PDF` a nyers bemenetet kapta, és az edge function `400 — Üres fájllista`-val szállt
+el. Ágat kikapcsolt node-dal nem lehet levágni; az utolsó node-ot kell kikapcsolni,
+vagy hagyni futni.
+
 **A diagnózisnál vigyázz a `truncateData`-ra.** A `get_workflow_execution`
 `truncateData` paramétere node-onként vágja az elemeket, és a levágott lista
 pontosan úgy néz ki, mintha az adatforrás adott volna kevesebbet. Emiatt először
