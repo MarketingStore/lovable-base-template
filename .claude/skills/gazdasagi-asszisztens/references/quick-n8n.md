@@ -159,6 +159,7 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 | QUiCK API felderítés | `0wPY8RdQvAF0iETH` | inaktív | kézi |
 | QUiCK artifacts felderítés | `kZMflW5ySpgnWSvE` | inaktív | kézi |
 | Metricool felderítés | `khPbJC9XtY6zLzMl` | inaktív | kézi |
+| Sheet duplikátum takarítás | `i2PAPWzZ1vm6dNVG` | inaktív | kézi |
 
 **Mielőtt bármelyiket elindítod:** az aktív workflow-k mellékhatással járnak — négy
 e-mailt küld, egy Drive-ra ír és mappát hoz létre. Ne futtasd őket próbaképp. A két
@@ -252,6 +253,32 @@ töredéke, tehát nagyrészt **idegen n8n-bérlők terhelése** meríti ki. Ez�
 Ahol viszont **nem** szabad `continueRegularOutput`: az OTP összevetésnél. Ha a
 kivonatokat nem tudjuk beolvasni, a „nincs hozzá számla" lista félrevezető lenne —
 ott a hangos hiba a helyes viselkedés.
+
+### A duplikátumok kitakarítása — 2026-09-01
+
+18 sort töröltünk a három MailerLite Sheetből: NP 8, CK 6, TC 4. Két forrásból jöttek
+— a fejlesztés közbeni tesztfutások (április 3×) és a mai menetrend-váltás (augusztus
+2×). Eszköz: „Sheet duplikátum takarítás" workflow (`i2PAPWzZ1vm6dNVG`, inaktív).
+
+Ahogy csináltuk, és amiért érdemes újra így:
+
+1. **Biztonsági másolat** mind a három munkafüzetről, a takarítás előtt
+   (`BIZTONSÁGI MÁSOLAT … 2026-09-01`). Ügyfél felé menő adatot csak visszavonható
+   módon szabad piszkálni.
+2. **A workflow maga számolja ki**, mit töröljön (bitre azonos sor → az elsőt
+   megtartja), nem kézzel beírt sorszámokból dolgozik.
+3. **Száraz futás először**, a `Torles` node kikapcsolva — a `Terv` node kimenetét
+   össze kell vetni egy kézi számolással. Egyezett, csak utána élesítettük.
+4. Törlés **alulról felfelé** (`deleteDimension` csökkenő `startIndex`), különben az
+   első törlés eltolná a többi sorszámát.
+5. Utána a `Torles` node **vissza kikapcsolva**, hogy egy véletlen indítás ne írjon.
+
+**n8n-buktató:** a Sheets `values:batchGet` ismételt `ranges` paramétert vár, az n8n
+keypair query módja viszont `ranges[0]` / `ranges[1]` néven serializálja, amit a
+Google 400-zal dob vissza. A query stringet kézzel kell az URL-be építeni.
+
+**A gyökérok megmarad:** a MailerLite workflow `append` módban ír, dedup nélkül —
+tehát minden extra futás új sorokat rak be. Amíg ez így van, a takarítás tüneti kezelés.
 
 ### Menetrendet ne mozgass a futásnap reggelén
 
