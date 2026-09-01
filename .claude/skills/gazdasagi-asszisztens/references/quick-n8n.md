@@ -232,6 +232,38 @@ PDF` a nyers bemenetet kapta, és az edge function `400 — Üres fájllista`-va
 el. Ágat kikapcsolt node-dal nem lehet levágni; az utolsó node-ot kell kikapcsolni,
 vagy hagyni futni.
 
+### A Drive-kvóta nem egyszeri: rendszerszintű
+
+Ugyanaz a 403 aznap **kétszer** ütött be, húsz perc különbséggel: 7:00-kor a Havi
+könyvelési csomagot vitte el, 8:00-kor az OTP kivonat összevetést — annak is az
+**első** node-ját (`Kivonat fajlok`), 0,4 másodperc alatt.
+
+A kvóta a `project_number:498586711441` Google Cloud projektre szól, ami az **n8n
+Cloud közös OAuth-appja**, percenként 12 000 kéréssel. A mi forgalmunk ennek a
+töredéke, tehát nagyrészt **idegen n8n-bérlők terhelése** meríti ki. Ezért:
+
+- **Minden Drive-hívásra kell `retryOnFail`.** Nem elég a nagy köteges node-okra;
+  itt egyetlen fájllistázás bukott el.
+- Az ütemezés széthúzása segít, de nem old meg semmit — nem a mi terhelésünk a fő ok.
+- **A tartós megoldás saját Google Cloud OAuth-credential** lenne (saját projekt =
+  saját 12 000/perc keret). Ez Google Cloud Console-ban létrehozott OAuth-kliens,
+  majd n8n-ben új Drive-credential.
+
+Ahol viszont **nem** szabad `continueRegularOutput`: az OTP összevetésnél. Ha a
+kivonatokat nem tudjuk beolvasni, a „nincs hozzá számla" lista félrevezető lenne —
+ott a hangos hiba a helyes viselkedés.
+
+### Menetrendet ne mozgass a futásnap reggelén
+
+A MailerLite workflow-t 7:00-ról 7:40-re toltam, hogy ne torlódjon a Drive API-n.
+A 7:00-s futás viszont **már lefutott**, mire publikáltam, és utána a 7:40-es is
+elindult: **mind a három ház Sheetjében kétszer szerepel a 2026-08.** A workflow
+`append` módban ír, nincs dedup — tehát minden extra futás egy extra sor.
+
+Ütemezés-változtatás a futás napján tehát vagy a futás előtt történjen, vagy fogadd
+el, hogy aznap kétszer fut. (A `limit=0` javítás egyébként élesben is jó: NP
+`Aktív feliratkozók = 2771`, `Nettó növekedés = -0,65%`.)
+
 **A diagnózisnál vigyázz a `truncateData`-ra.** A `get_workflow_execution`
 `truncateData` paramétere node-onként vágja az elemeket, és a levágott lista
 pontosan úgy néz ki, mintha az adatforrás adott volna kevesebbet. Emiatt először
