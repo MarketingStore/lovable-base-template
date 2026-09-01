@@ -157,6 +157,7 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
 | Terv-tény adatok — Napfény Park | `U4kxI4bcq3lTGXWw` | aktív | 1-jén 7:15 |
 | QUiCK API felderítés | `0wPY8RdQvAF0iETH` | inaktív | kézi |
+| QUiCK artifacts felderítés | `kZMflW5ySpgnWSvE` | inaktív | kézi |
 | Metricool felderítés | `khPbJC9XtY6zLzMl` | inaktív | kézi |
 
 **Mielőtt bármelyiket elindítod:** az aktív workflow-k mellékhatással járnak — négy
@@ -167,6 +168,46 @@ szerkezetére vagy kíváncsi.
 **A végrehajtási előzmény kb. 8 napra visszamenőleg van meg** az n8n Cloudon. Havi
 workflow-nál tehát a `search_workflow_executions` üres találata **nem** bizonyítja,
 hogy sosem futott — a kimenetét kell megnézni (Sheet, Drive-mappa, levél).
+
+### A Google Drive percenkénti kvótája — 2026-09-01
+
+A 2026. szeptember 1-jei futás **az első fájlnál** elhalt:
+
+```
+403 rateLimitExceeded — Quota exceeded for quota metric 'Queries' and limit
+'Requests per minute' of service 'drive.googleapis.com'
+for consumer 'project_number:498586711441'
+```
+
+A kvóta a **Google Cloud projektre** vonatkozik, nem a fiókra — az n8n Cloud közös
+OAuth-appja alatt fut, tehát idegen terhelés is beleszámíthat. Nem hitelesítési hiba,
+hiába mondja a node, hogy „perhaps check your credentials".
+
+Ami ennél rosszabb volt: **egyetlen kvótahiba elvitte az egész futást.** 66 tételből
+1 fájl ment fel, összegző e-mail nem ment ki, a nyomtatható PDF sem készült el — és
+mivel a levél elmaradt, csak a hibariasztásból derült ki, hogy baj van. Az
+`Osszegzes` node pont erre való (van benne „FELTÖLTÉS ELAKADT" szakasz), de sosem
+futott le.
+
+Javítva:
+
+- `Feltoltes Drive-ra`: `retryOnFail` 5 próba 5 mp-enként, **és
+  `onError: continueRegularOutput`** — így egy elakadt fájl nem viszi el a maradék
+  65-öt és az összegző levelet sem. A hibás tételek átmennek, az `Osszegzes` pedig
+  felsorolja őket.
+- `Nyomtathato feltoltes`, `Meglevo fajlok`, `Mappa kereses`: `retryOnFail`.
+
+**Ütemezés-ütközés.** A „Havi könyvelési csomag" és a „MailerLite havi riport" is
+1-jén 7:00-kor indul, és mindkettő a Drive API-t terheli (a MailerLite hat Sheets-
+írással). Ez a saját kezünkben lévő rész a torlódásból — ha újra előfordul, az egyiket
+el kell tolni.
+
+**A diagnózisnál vigyázz a `truncateData`-ra.** A `get_workflow_execution`
+`truncateData` paramétere node-onként vágja az elemeket, és a levágott lista
+pontosan úgy néz ki, mintha az adatforrás adott volna kevesebbet. Emiatt először
+tévesen arra jutottam, hogy a QUiCK 66 helyett csak 2 letöltési linket ad; a
+`QUiCK artifacts felderítés` workflow (`kZMflW5ySpgnWSvE`, inaktív, read-only)
+megmutatta, hogy mind a 66 megjön. **Hibakeresésnél ne csonkíts.**
 
 ### Havi könyvelési csomag — mit csinál pontosan
 
