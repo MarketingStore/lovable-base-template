@@ -68,6 +68,24 @@ listába (`platform: 'TikTok'`), vagy — ha addigra lekönyvelték őket — cs
 kapcsolót `false`-ra. A lista **önsemlegesítő**: egy kézi tétel automatikusan kiesik,
 amint az adott hónapra az adott platformon megjön a valódi számla.
 
+### Ez a kimutatás az ügyfélnek is kimegy
+
+Fontos következmény, és ez alakítja az egész felépítést: **a CSL havonta megkapja
+ezt az összesítőt.** Az ügyfél korábban a 2019 óta tartó teljes költést látta, ezért
+a fordulónap nem tüntetheti el a korábbi időszakot — az összesítve akkor is
+megjelenik. A levél és a melléklet ezért **2019-től** számol, nem a fordulónaptól.
+
+A munkamegosztás:
+
+- **A levél az info@ címre megy**, és tartalmazza az „Amire figyelni kell" blokkot
+  is (költségtípus-javítás, besorolatlan számlák, hiányzó TikTok). Ez **belső**.
+- **A csatolt Excel az ügyfélé.** Ebben a belső megjegyzések szándékosan **nincsenek
+  benne** — a `Excel sorok` node külön építi fel, nem a levél HTML-jéből származik.
+
+Ha új figyelmeztetést veszel fel, gondold végig, melyik oldalra való. A kettő
+összekeverése azt jelentené, hogy a saját könyvelési rendetlenségünk kimegy az
+ügyfélhez.
+
 ### A fordulónap és a nyitó egyenleg
 
 A nyilvántartás **2019 óta** fut a `Hirdetési költségek ÉÉÉÉ.HH.NN.xlsx` táblában
@@ -79,15 +97,26 @@ Ez nem feltevés, hanem **ellenőrzött**: a fordulónaptól a QUiCK Meta-költs
 **72 számlán forintra egyezik** a tábla négy Facebook-blokkjával (9 408 571 Ft).
 A Google-nál az egyetlen eltérés a le nem könyvelt májusi számla.
 
-A fordulónapig terjedő tény:
+A fordulónapig terjedő tény **be van építve a kódba**, mert az ügyfélnek szóló
+kimutatásban tételesen meg kell jelennie:
 
 | | |
 |---|---|
-| Facebook (2019-04-26 – 2025-10-21, három telephely) | 40 062 948 |
-| Google (77 számla 2025-10-22 előtt) | 23 144 146 |
+| Facebook — Nyíregyháza (2019.04.26 – 2025.10.21) | 13 481 326 |
+| Facebook — Debrecen (2019.04.26 – 2025.10.21) | 14 335 627 |
+| Facebook — Miskolc (2019.03.27 – 2025.10.21) | 12 245 995 |
+| **Facebook részösszeg** | **40 062 948** |
+| Google Ads évenként 2019→2025 (77 számla) | 23 144 146 |
 | **Elköltve összesen** | **63 207 094** |
 | Kiszámlázva (a tábla 79 640 000-ből a 11 200 000 utólagos előleg nélkül) | 68 440 000 |
-| **→ `NYITO_EGYENLEG` 2025-10-22-én** | **5 232 906** |
+| **→ nyitó egyenleg 2025-10-22-én** | **5 232 906** |
+
+A Google éves bontása: 2019 · 2 006 411 | 2020 · 1 983 972 | 2021 · 3 420 551 |
+2022 · 4 401 390 | 2023 · 4 908 895 | 2024 · 3 640 306 | 2025 · 2 782 621.
+
+**A nyitó egyenleg számított, nem beégetett szám**: `KORABBI_SZAMLAZOTT` mínusz a
+korábbi költés összege. Ez szándékos — így ha a korábbi időszak bármelyik sora
+javul, a nyitó magától követi, és nem tud kettéválni a két szám.
 
 Előlegszámla 2025-10-22 és 2025 vége között **nem volt** — a QUiCK szerint a
 fordulónap utáni három előleg mind 2026-os.
@@ -100,24 +129,45 @@ független alapból azonos eredmény — ez adja a bizalmat a képletben.
 
 | | | |
 |---|---|---|
-| Nyitó egyenleg (2025-10-22) | | 5 232 906 Ft |
-| + Számlázott előleg | 3 számla | 11 200 000 Ft |
+| Számlázott előleg 2019 óta | 68 440 000 + 3 számla | 79 640 000 Ft |
+| − Korábbi időszak költése | 2019 – 2025.10.21 | 63 207 094 Ft |
 | − Facebook | 72 számla | 9 408 571 Ft |
 | − Google Ads | 11 számla (ebből 2 még nem könyvelt) | 5 466 420 Ft |
-| − TikTok | 1 számla | 40 000 Ft |
-| − **Hirdetési költség összesen** | | **14 914 991 Ft** |
+| − TikTok | 1 számla (hiányos) | 40 000 Ft |
+| − **Elköltve összesen** | | **78 122 085 Ft** |
 | **Hátralévő előleg** | | **1 517 915 Ft** ≈ 1,2 havi költés |
 
-### A levél három összesítője
+**Keresztellenőrzés az ügyfél saját táblájával.** A 2026.08.26-i Excel
+77 612 475 Ft elköltést mutat, a mienk 78 122 085-öt. A különbség pontosan
+**509 610 Ft = 469 610 (augusztusi Google) + 40 000 (TikTok)** — vagyis a két
+számítás ugyanaz, csak a tábla ezt a két számlát még nem tartalmazta. (A tábla
+„Egyenleg" sora `-2 027 525`-öt ír; ott a kivonás sorrendje fordított, a
+tényleges maradék pozitív.)
 
-Az Excel három lapját követi, hogy összevethető maradjon:
+### A levél öt szakasza
 
-1. **Facebook számlaösszesítő** — havi bontásban, mert a Meta havonta több számlát
-   ad (2025-10-22 óta 72 db).
-2. **Google Ads számlaösszesítő** — számlánként, mert a Google havonta egyet ad.
+1. **Korábbi időszak (2019.03.27 – 2025.10.21)** — Facebook telephelyenként, Google
+   Ads évenként. Ez tartja meg az ügyfélnek a megszokott, 2019-től induló képet.
+2. **Facebook 2025.10.22-től** — havi bontásban, mert a Meta havonta több számlát
+   ad (72 db).
+3. **Google Ads 2025.10.22-től** — számlánként, mert a Google havonta egyet ad.
    A még nem könyvelt sorok sárga háttérrel, számlaszám helyett jelöléssel.
-3. **Teljes összesítő** — a kimenő előlegszámlák tételesen, alatta a költségoldal
-   platformonként, és a kettő különbsége a nyitó egyenleggel.
+4. **TikTok** — számlánként (lásd a hiányról szóló szakaszt fent).
+5. **Teljes összesítő 2019 óta** — a számlázott előleg (korábbi összesítve + a
+   QUiCK-es előlegszámlák tételesen), alatta a költségoldal, és a kettő különbsége.
+
+A záró szám mindkét úton ugyanaz: `79 640 000 − 78 122 085 = 1 517 915`.
+
+### A melléklet
+
+A `Excel sorok` node egy lapos, szakaszolt táblát épít (`Szakasz`, `Megnevezés`,
+`Időszak`, `Db`, `Nettó (Ft)` oszlopok), amit a `Excel fajl` node
+(`convertToFile`, xlsx) alakít fájllá, és a Gmail node csatolja
+`CSL_online_hirdetes_ÉÉÉÉ-HH-NN.xlsx` néven.
+
+Azért lapos, egylapos tábla, és nem több munkalap, mert az n8n `convertToFile`
+node-ja **egy munkalapot tud**. A `Szakasz` oszlop pótolja a füleket: szűrhető,
+összegezhető, és egy képernyőn átlátható marad.
 
 ### Két csapda, amit a workflow kezel
 
