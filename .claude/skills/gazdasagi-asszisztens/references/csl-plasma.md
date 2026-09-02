@@ -74,27 +74,46 @@ Ellenőrzés: 1 571 107 + 11 200 000 − 10 743 582 = **2 027 525** = az Excel e
 
 Ha egyszer a QUiCK visszamenőleg is teljes lesz, a konstans 0-ra vehető.
 
+### „Ismert, de még nem könyvelt" sor
+
+A kódban van egy `ISMERT_MEG_NEM_KONYVELT` lista: olyan hirdetési számlák, amelyek
+összege ismert (a szolgáltató fiókjából vagy a `Hirdetési költségek` Excelből), de a
+QUiCK-ben még nincsenek benne. A fő egyenleg **számol velük**, mert a pénz valójában
+már el van költve — enélkül a maradék előleg túl kedvezőt mutatna.
+
+**A lista önmagát semlegesíti.** Egy tétel csak akkor számít bele, ha az adott
+hónapra az adott platformon a QUiCK **még semmit** nem ad. Amint lekönyvelik, a kézi
+sor magától kiesik, tehát **duplán számolni nem lehet** — és a levél külön ki is írja,
+hogy melyik kézi tétel vált feleslegessé. Törölni nem kötelező, de tisztább.
+
+Jelenlegi tartalma:
+
+| Hónap | Platform | Nettó |
+|---|---|---|
+| 2026. május | Google Ads | 521 285 Ft |
+| 2026. augusztus | Google Ads | 469 610 Ft |
+
 ### Állapot 2026-09-02-án
 
 | | |
 |---|---|
 | Nyitó egyenleg (2026-01-01) | 1 571 107 Ft |
 | + Számlázott előleg 2026-ban | 11 200 000 Ft (02-05: 4 000 000, 04-30: 3 200 000, 06-24: 4 000 000) |
-| − Felhasznált | 10 262 297 Ft (Meta 7 540 153 + Google 2 682 144 + TikTok 40 000) |
-| **Hátralévő a QUiCK szerint** | **2 508 810 Ft** ≈ 2,3 havi költés |
+| − Felhasznált, lekönyvelt | 10 262 297 Ft (Meta 7 540 153 + Google 2 682 144 + TikTok 40 000) |
+| − Ismert, még nem könyvelt | 990 895 Ft |
+| **Hátralévő előleg** | **1 517 915 Ft** ≈ 1,2 havi költés |
 
-**Két Google-számla hiányzik a QUiCK-ből: 2026. május és augusztus.** A májusi a
-`Hirdetési költségek` Excelben szerepel (**521 285 Ft**), a QUiCK API-n viszont
-nincs nyoma: a 2026-05-31-i Google Ireland tételek (30 814, 30 230, 70 618) mind
-**más ügyfélé**, egyiken sincs CSL-címke. Augusztusra egyetlen Google-sor sincs.
+Csak a lekönyvelt tételekkel 2 508 810 Ft lenne — a különbség pontosan a két Google-számla.
 
-Ez azért fontos, mert egy hiányzó Google-számla **egy egész hónapot** jelent — a
-Google havonta egy számlát ad, a Meta viszont sokat (2026-ban 92 Meta-számla van a
-rendszerben, ebből 56 CSL-címkés).
+**A két Google-számla a QUiCK API-n nem látszik** (2026-09-02-i állapot). A
+2026-05-31-i Google Ireland tételek (30 814, 30 230, 70 618 Ft) mind **más ügyfélé**,
+egyiken sincs CSL-címke; augusztusra egyetlen Google-sor sincs. Egy hiányzó
+Google-számla mindig **egy egész hónapot** jelent, mert a Google havonta egyet ad —
+a Meta viszont sokat (92 Meta-számla a rendszerben, ebből 56 CSL-címkés).
 
 > **Az Excel dokumentumszámai megbízhatatlanok.** Az áprilisi Google-számla száma a
 > QUiCK-ben `5563871197`, az Excelben viszont `5591068924` — ugyanaz, mint a májusi
-> soron. Kereséskor a QUiCK-beli számot használd.
+> soron. Kereséskor a QUiCK-belit használd.
 
 ### Két csapda, amit a workflow kezel
 
