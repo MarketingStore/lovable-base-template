@@ -3,9 +3,11 @@
 A CSL Plasma a legnagyobb ügyfél (havidíj **3 440 000 Ft** nettó, fizetési határidő
 10-e). Két visszatérő feladat fut mellette, amit ez a fájl ír le:
 
-1. **Online hirdetési előleg követése** — gépesítve, lásd lent.
-2. **Továbbszámlázott ételek nyilvántartása** — **nem gépesíthető a jelenlegi
-   adatrögzítés mellett**, lásd a végén, hogy miért.
+1. **Online hirdetési előleg követése** — mikor kell kiállítani a következő előleget.
+2. **Továbbszámlázandó tételek havi listája** — mi gyűlt össze az előző hónapban.
+
+Mindkettő gépesítve, egy-egy aktív workflow-val. **A CSL-nél nincs ügynökségi
+jutalék és nincs árrés** — minden beszerzési áron megy tovább.
 
 ## A QUiCK-beli azonosítók
 
@@ -39,24 +41,60 @@ Hiteltörlesztés.
 A levél megmondja, hány havi átlagos költésre elég még a maradék, és szól, ha egy
 havinál kevesebb — ez a jelzés arra, hogy **ideje kiállítani a következő előleget**.
 
-**Költségtípus szerint szűrünk, nem szállítónév szerint.** Ez szándékos: a
-szállítónév elgépelhető és változhat, a típus viszont a könyvelési döntés. Egy
-mellékhatása van, amit tudni kell: a **TikTok** (40 000 Ft, 2026. január) `Projekt
-költség` típust kapott, nem hirdetésit, ezért **kimarad** az egyenlegből. Ha a
-TikTok tartósan belép, kérni kell hozzá saját költségtípust.
+**Elsősorban költségtípus szerint szűrünk, nem szállítónév szerint.** Ez szándékos: a
+szállítónév elgépelhető és változhat, a típus viszont a könyvelési döntés.
+
+Mellette van egy **szállítói védőháló** (Meta, Google Ireland, TikTok): ha egy ismert
+platform számlája nem hirdetési típust kapott, a workflow akkor is beveszi, és külön
+kiírja, hogy a típust javítani kell. Erre valós eset adott okot: a **TikTok**-számla
+(40 000 Ft, 2026-01-19, `BDUK2026366294`) `Projekt költség` típust kapott, és enélkül
+egyszerre esett volna ki az előleg-egyenlegből **és** bele a továbbszámlázási listába.
+A védőháló megakadályozza mindkettőt, de a típust a QUiCK-ben így is javítani kell.
+
+### A nyitó egyenleg és az Excel-lel való egyeztetés
+
+A workflow 2026-01-01-től olvassa a QUiCK-et, de a nyilvántartás **2019 óta** fut a
+`Hirdetési költségek ÉÉÉÉ.HH.NN.xlsx` táblában (Facebook / Google / Összesítő lap).
+Ezért a kódban van egy `NYITO_EGYENLEG` konstans: **1 571 107 Ft**.
+
+Levezetés — és ez az egyeztetés **forintra pontosan kijön**, ez adja a bizalmat:
+
+| | |
+|---|---|
+| Excel: összes költés 2026-08-26-ig | 77 612 475 |
+| Excel: összes kiszámlázva (utolsó: MS-2026-182) | 79 640 000 |
+| Excel: egyenleg | 2 027 525 |
+| 2026-os költés (QUiCK 10 222 297 + hiányzó májusi Google 521 285) | 10 743 582 |
+| 2026-os előleg (QUiCK) | 11 200 000 |
+| → 2026 előtti költés | 66 868 893 |
+| → 2026 előtti számlázás | 68 440 000 |
+| **→ nyitó egyenleg 2026-01-01** | **1 571 107** |
+
+Ellenőrzés: 1 571 107 + 11 200 000 − 10 743 582 = **2 027 525** = az Excel egyenlege.
+
+Ha egyszer a QUiCK visszamenőleg is teljes lesz, a konstans 0-ra vehető.
 
 ### Állapot 2026-09-02-án
 
 | | |
 |---|---|
-| Számlázott előleg | 11 200 000 Ft (3 db: 02-05 4 000 000, 04-30 3 200 000, 06-24 4 000 000) |
-| Felhasznált | 10 222 297 Ft (Meta 7 540 153 + Google 2 682 144) |
-| **Hátralévő** | **977 703 Ft** — kevesebb, mint egy havi átlag (1 076 000 Ft) |
+| Nyitó egyenleg (2026-01-01) | 1 571 107 Ft |
+| + Számlázott előleg 2026-ban | 11 200 000 Ft (02-05: 4 000 000, 04-30: 3 200 000, 06-24: 4 000 000) |
+| − Felhasznált | 10 262 297 Ft (Meta 7 540 153 + Google 2 682 144 + TikTok 40 000) |
+| **Hátralévő a QUiCK szerint** | **2 508 810 Ft** ≈ 2,3 havi költés |
 
-**Két hónapból hiányzik a Google-számla** (2026. május és augusztus). Amíg nem
-érkeznek meg, az egyenleg a valóságosnál kedvezőbbet mutat — a levél ezt külön
-kiírja. A Meta havonta több számlát ad (2026-ban 56 db nyolc hónapra), a Google
-kevesebbet (6 db) — a hiány tehát a Google oldalán a gyakoribb.
+**Két Google-számla hiányzik a QUiCK-ből: 2026. május és augusztus.** A májusi a
+`Hirdetési költségek` Excelben szerepel (**521 285 Ft**), a QUiCK API-n viszont
+nincs nyoma: a 2026-05-31-i Google Ireland tételek (30 814, 30 230, 70 618) mind
+**más ügyfélé**, egyiken sincs CSL-címke. Augusztusra egyetlen Google-sor sincs.
+
+Ez azért fontos, mert egy hiányzó Google-számla **egy egész hónapot** jelent — a
+Google havonta egy számlát ad, a Meta viszont sokat (2026-ban 92 Meta-számla van a
+rendszerben, ebből 56 CSL-címkés).
+
+> **Az Excel dokumentumszámai megbízhatatlanok.** Az áprilisi Google-számla száma a
+> QUiCK-ben `5563871197`, az Excelben viszont `5591068924` — ugyanaz, mint a májusi
+> soron. Kereséskor a QUiCK-beli számot használd.
 
 ### Két csapda, amit a workflow kezel
 
@@ -64,60 +102,58 @@ kevesebbet (6 db) — a hiány tehát a Google oldalán a gyakoribb.
   `is_cancelled === false` számít, különben duplán számolnánk.
 - **Kategorizálatlan kimenő számla.** Ha egy CSL-számlán nincs `revenue_type`, és
   történetesen előleg lenne, **csendben kimaradna** az egyenlegből. A levél ezért
-  külön felsorolja a kategorizálatlanokat. 2026 augusztusában hat ilyen volt
-  (MS-2026-220…226).
+  külön felsorolja őket. 2026 augusztusában hat ilyen volt (MS-2026-220…226) —
+  ezek **megerősítetten nem** online hirdetési költségek, hanem projektbevétel;
+  a típus pótlása így is kell, mert a továbbszámlázási kimutatásból kimaradnak.
 
-**A számítás 2026-01-01-től indul.** Ha ez előttről volt nyitó előleg-egyenleg, az
-nincs benne — a levél alján ez ki van írva.
+**A számítás 2026-01-01-től indul**, a nyitó egyenleggel korrigálva (lásd fent).
 
-**Árrés nincs beépítve**: beszerzési áron számol. Ha a CSL-nél is van jutalék (mint
-az ERSTE-s házaknál a 15%), azt előbb tisztázni kell, és akkor a képlet változik.
+**Árrés és ügynökségi jutalék nincs** — beszerzési áron számol. Ez megerősített
+ügyfélszabály, nem feltételezés: a CSL-nél nem számolunk rá semmit. (Az ERSTE-s
+házaknál ezzel szemben 15% jutalék van a hirdetési kereten — a kettőt ne keverd.)
 
-## 2. Továbbszámlázott ételek — miért nem gépesíthető
+## 2. Továbbszámlázandó tételek — „CSL továbbszámlázás — havi lista"
 
-A feladat az lenne, hogy havonta összegyűljön a továbbszámlázandó **étel** tétel.
-Ez a jelenlegi rögzítés mellett **nem megy**, és ezt fontos nem megkerülni:
+`btbpNJoEBNC98uA7`, aktív, minden hónap **8-án 8:00**, levél az info@ címre,
+Excel-melléklettel.
 
-- A CSL alatt **minden nem-hirdetési tétel ugyanaz a típus**: `Projekt költség`
-  (2026-ban 100 tétel, 11 294 368 Ft).
-- **Nincs második címkedimenzió.** Az `assignments[].tags` és a számla `tags`
-  mezője a CSL tételeknél **végig üres**, az `invoice_class` mindenhol `0`.
-- A 12 költségtípus közt **nincs étel-jellegű**.
+> A feladat eredetileg „továbbszámlázott **ételek**"-ként hangzott el — ez diktálási
+> félrehallás volt (Wispr Flow), a helyes szó **tételek**. Ne kezdj étel-kategóriát
+> keresni a QUiCK-ben: nincs ilyen mező, és nem is kell.
 
-Vagyis az „étel" kategória sehol nincs rögzítve — csak a szállító nevéből lehetne
-kitalálni, az pedig félrevinne. A CSL alatti tételek jó része **nyeremény és
-ajándék**, nem étel: Media Markt 400 000, mozijegy (I.T. Magyar Cinema) 211 449,
-Aquaticum 43 465, SÓSTÓ-Gyógyfürdők 60 000, Jegyvasarlas.hu 53 858. Ezek
-szállítónév alapján ugyanúgy „vendéglátásnak" néznének, mint a Simon's Burger.
+Az előző hónap **összes** CSL-címkés, nem hirdetési költségét összeszedi tételesen
+(dátum, szállító, számlaszám, nettó, van-e számlakép), szállítónként összesítve, és
+mellékel egy Excelt üres **„Továbbszámlázandó?"** oszloppal.
 
-Két járható út van, és ez **ügyféldöntés**, nem technikai kérdés:
+**A workflow gyűjt és összesít, nem dönt.** Ez szándékos: 2026 júliusában 6 000 060 Ft
+nem hirdetési költség volt, augusztus 10-én viszont 3 633 163 Ft ment ki
+továbbszámlázásra — a 61%-a. Tehát a költség egy része saját, és ezt csak ember tudja
+eldönteni.
 
-1. **Szállítói lista** ebben a fájlban, mint a beszerzési regiszter — gyorsan indul,
-   de minden új szállítónál karban kell tartani, és egy kimaradó szállító némán
-   kiesik a továbbszámlázásból.
-2. **Saját költségtípus a QUiCK-ben** (pl. `Étel` vagy `Továbbszámlázandó`) —
-   ez a tartós megoldás, mert a rögzítéskor eldől, és utána gépi. Cserébe a 2026-os
-   előzményt vissza kell címkézni.
+**Nincs árrés és nincs ügynökségi jutalék** — beszerzési áron megy tovább. (Ez a CSL
+sajátja; az ERSTE-s házaknál 15% jutalék van a hirdetési kereten.)
 
-Amíg ez nincs eldöntve, **ne tippelj szállítónévből** — rossz kategóriába sorolt
-tétel vagy kimaradt továbbszámlázás mindkettő valós pénzveszteség.
+### A futó nyilvántartás
 
-### Az étel-gyanús szállítók (2026-01-01 óta, tájékoztatásul)
+A levél alján havi bontásban áll a **költség** és a már **kiszámlázott** projektbevétel,
+plusz a különbözet. A különbözet önmagában nem hiba: a számlázás a következő hónapban
+történik, tehát a sorok elcsúsznak, és a saját költség sosem jelenik meg bevételként.
+A tábla arra való, hogy a **tartósan** nyitva maradó rés látszódjon.
 
-| Szállító | Nettó | Db |
-|---|---|---|
-| TESCO-GLOBAL Zrt. | 100 000 | 1 |
-| Simon's Burger Kft. | 70 748 | 2 |
-| Lindt s.r.o. | 56 948 | 1 |
-| Öreg Miskolcz Kft. | 21 680 | 1 |
-| SPAR Magyarország | 10 406 | 3 |
-| MARKET-SK Kft. | 7 700 | 1 |
-| Wolt Magyarország | 508 | 3 |
+Van egy külön **„Besorolatlan"** oszlop is. Erre azért van szükség, mert a
+`revenue_type` nélküli kimenő számlák nem számítanak bele a „Kiszámlázott" oszlopba,
+és emiatt a különbözet a valóságosnál rosszabbat mutatna. 2026 augusztusában hat ilyen
+volt (MS-2026-220…226, összesen 3 633 163 Ft) — ezek **nem** előlegek, hanem
+projektbevétel, csak hiányzik róluk a típus.
 
-A számlaképek fájlneve telephelyre utal (`INTERSPAR_Miskolc_WOLT.pdf`,
-`Tesco_Debrecen.pdf`, `INTERSPAR_Nyíregyháza_WOLT.pdf`) — ha a továbbszámlázás
-telephelyenként bontva kell, ez a fájlnév az egyetlen jelenlegi támpont, és az sem
-megbízható forrás.
+### A két kimutatás nem fedheti át egymást
+
+A hirdetési tételek szándékosan kimaradnak innen, mert azok az előleg-egyenlegen
+futnak. A szűrés elsősorban **költségtípus** szerint megy, de van egy **szállítói
+védőháló** is (Meta, Google Ireland, TikTok): a TikTok-számla ugyanis tévesen
+`Projekt költség` típust kapott, és enélkül egyszerre esett volna ki az
+előleg-egyenlegből és bele a továbbszámlázási listába. Mindkét workflow jelzi, ha
+ilyet talál, hogy a QUiCK-ben javítani lehessen a típust.
 
 ## A felderítő workflow
 
