@@ -156,10 +156,16 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 | Napi pénzügyi pozíció | `fnBQVW5vfmOlCg0f` | aktív | naponta 7:30 |
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
 | Terv-tény adatok — Napfény Park | `U4kxI4bcq3lTGXWw` | aktív | 1-jén 7:15 |
+| Akcióterv aktivitás — 3 ház | `1dVfn4OzDpzy2NuP` | aktív | 1-jén 7:30 |
 | QUiCK API felderítés | `0wPY8RdQvAF0iETH` | inaktív | kézi |
 | QUiCK artifacts felderítés | `kZMflW5ySpgnWSvE` | inaktív | kézi |
 | Metricool felderítés | `khPbJC9XtY6zLzMl` | inaktív | kézi |
+| Akcióterv forrás felderítés | `KA7Thkm5wQbzL2PY` | inaktív | kézi |
 | Sheet duplikátum takarítás | `i2PAPWzZ1vm6dNVG` | inaktív | kézi |
+
+A hónap 1-jei torlódás miatt az indítások szét vannak húzva: 6:00 hiányzó számlák,
+7:00 könyvelési csomag, 7:15 terv-tény, **7:30 akcióterv**, 7:40 MailerLite, 8:00 OTP.
+Ha új havi workflow kell, keress szabad sávot — a Drive-kvóta közös.
 
 **Mielőtt bármelyiket elindítod:** az aktív workflow-k mellékhatással járnak — négy
 e-mailt küld, egy Drive-ra ír és mappát hoz létre. Ne futtasd őket próbaképp. A két

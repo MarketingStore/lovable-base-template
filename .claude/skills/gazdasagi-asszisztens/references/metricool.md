@@ -180,20 +180,36 @@ bevitt** hónapokhoz mérjük.
 | 2026. június | 5 / 9 | **mindhárom háznál +1 FB poszt**, plusz a TC-nél +1 IG |
 
 A júniusi eltérés nem zaj: **pontosan +1, mind a három háznál, ugyanabban a hónapban.**
-Ez közös okra utal — vagy kiment egy poszt, ami a havi elszámolásba nem került bele,
-vagy a kézi szám a poszttervből jön, nem a tényleges kimenetből. A story-sor
-mindkét hónapban, mindhárom háznál hibátlan.
-
-**Amíg ez nincs tisztázva, a 5./6. sort felülvizsgálatra kell adni, nem vakon beírni.**
 A 2026-01..08 éves NP-összevetés ugyanezt mutatja: FB 6/7, IG 5/7, story 7/7.
 
-### A felderítő workflow
+**Döntés (Perényi, 2026-09-02): a Metricool a mérce**, a júniusi kézi érték volt
+pontatlan. Így az 5./6. sor is gépesíthető, nem kell kézi jóváhagyás.
 
-`KA7Thkm5wQbzL2PY` („Akcióterv forrás felderítés"), inaktív, kézi, **csak olvas**.
-Egy `Keresek` Code node állítja össze a 3 ház × 3 lekérdezés = 9 hívást, egy HTTP node
-futtatja őket, az `Osszegzes` pedig **sorrend szerint** párosítja vissza a válaszokat
-(a `{data:[...]}` burkolat miatt hívásonként egy item marad, tehát a sorrend tartható).
-A hónap az `ev`/`ho` konstansban állítható.
+### A havi workflow
+
+`1dVfn4OzDpzy2NuP` („Akcióterv aktivitás — 3 ház"), **aktív, minden hónap 1-jén 7:30**.
+Levelet küld a perenyi@marketingstore.hu címre arról, hogy melyik lap melyik cellájába
+mi kerüljön, Excel-melléklettel. **Nem írja a táblát, csak megmondja, mit írj bele** —
+lásd feljebb, miért nem lehet.
+
+Lánc: `Honap 1-jen 7:30` → `Keresek` → `Metricool hivas` → `Cellak` → `Cella sorok`
+→ `Cellak xlsx` → `Ertesito email`.
+
+A `Keresek` node állítja össze a 3 ház × 3 lekérdezés = 9 hívást **fix sorrendben**,
+egyetlen HTTP node futtatja mindet, a `Cellak` pedig **sorrend szerint** párosítja
+vissza a válaszokat. Ez azért működik, mert a `{data:[...]}` burkolat miatt hívásonként
+egy item marad — bare tömbnél az n8n szétbontaná őket, és a párosítás elveszne.
+
+A lapnév (`NFP 2026.mkting`) évszámot tartalmaz, ezért az évből épül — évváltáskor
+magától stimmel. Az oszloptérkép viszont fix, azt kézzel kell átírni, ha a tábla
+szerkezete változik.
+
+**A nulla-őr**: ha bármelyik poszt-sor 0-t adna, a levél tárgyába `ELLENŐRIZNI` kerül.
+A story-sor kivétel, mert januárban és februárban valóban 0 volt mindhárom háznál.
+
+A felderítéshez használt `KA7Thkm5wQbzL2PY` („Akcióterv forrás felderítés") megmaradt:
+inaktív, kézi, **csak olvas**, a hónap az `ev`/`ho` konstansban állítható — jó arra, hogy
+egy korábbi hónapot újra összevessünk.
 
 ## Amit a Metricool NEM tud
 

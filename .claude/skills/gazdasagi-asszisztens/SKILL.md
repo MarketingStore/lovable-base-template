@@ -149,6 +149,15 @@ A költés forrása a **Metricool** — a `/stats/facebookads/campaigns` és
 Amit **nem szabad gépiesíteni**: a Facebook-költés szétosztását a keret- / lead-játék
 / esemény sorok között. Ehhez kampány-névkonvenció kell; enélkül kérdezz.
 
+### 5. Marketing akcióterv (ERSTE-s házak)
+
+Külön tábla a terv-ténytől: havi aktivitás-darabszámok mindhárom házra
+(`marketing akcióterv-ÉÉÉÉ.-NFP-CK-TC.xlsx`). Ebből a **FB poszt / IG poszt /
+FB story** sor jön a Metricoolból — a júliusi adatokon mindhárom házra pontos
+egyezéssel. A **Google Cégem poszt** és a **Facebook villámjáték** sor kézi marad;
+a **havi hírlevél** a MailerLite Sheetből olvasható ki. Részletek, oszloptérkép és
+a workflow: **`references/metricool.md`**.
+
 ## Munkastílus
 
 **Kérdezz, ha az adat hiányzik, ne találd ki.** Egy rossz összeg a TIG-en később
