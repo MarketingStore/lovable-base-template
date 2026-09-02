@@ -112,7 +112,9 @@ Az Excel három lapját követi, hogy összevethető maradjon:
   ezek **megerősítetten nem** online hirdetési költségek, hanem projektbevétel;
   a típus pótlása így is kell, mert a továbbszámlázási kimutatásból kimaradnak.
 
-**A számítás 2026-01-01-től indul**, a nyitó egyenleggel korrigálva (lásd fent).
+**A számítás a 2025-10-22-i fordulónaptól indul**, a nyitó egyenleggel (lásd fent).
+A QUiCK-lekérdezés `from_date`-je 2025-10-01, a kód szűr a pontos fordulónapra —
+így a hónapforduló nem vág ketté számlát.
 
 **Árrés és ügynökségi jutalék nincs** — beszerzési áron számol. Ez megerősített
 ügyfélszabály, nem feltételezés: a CSL-nél nem számolunk rá semmit. (Az ERSTE-s
