@@ -229,6 +229,26 @@ valós költség volt, csak már elszámoltuk. A levél külön, sárga tábláb
 épp lezárt köteghez tartozik, és vedd fel a listára. Ezt a workflow nem tudja
 magától eldönteni: a QUiCK-ben semmi nem köti össze a számlát a rendezvénnyel.
 
+### A nyilvántartás július 1-től fut, és visszamenőleg is mutat
+
+A kimutatás **nem csak a célhónapot** listázza, hanem **minden nyitott tételt** a
+kezdet óta. Ez szándékos: enélkül egy hónapban kimaradt számla soha többé nem került
+volna elő. A levélben külön táblában áll a „Korábbi hónapokból nyitva maradt" rész,
+és az Excelben is ott a `Hónap` oszlop.
+
+A `MAR_TOVABBSZAMLAZVA` a 2026. júliusi köteg (3 633 163 Ft) 25 számláját tartalmazza.
+Ezeket **összeg szerint** párosítottuk az ügyfél tételsoros táblázatával, mert a tábla
+tételsor szerint készül, nem számla szerint. Három tétel (Lindt, MailerLite, Manychat)
+**devizás eltérés** miatt nem egyezett forintra, de a szállító és az időszak
+egyértelmű — ezek is a listán vannak.
+
+Két csapda a párosításnál, ha újra kell csinálni:
+
+- **Egy tábla-tétel több számlán is lehet.** A 90 125 Ft-os mozijegy-utalvány négy
+  I.T. Magyar Cinema számlából áll össze.
+- **Egy számla sok tábla-sorból.** A 388 804 Ft-os INNOVARIANT-számla húsz tételsor
+  összege — ha az összeillesztő ablaka szűk, ezt nem találja meg.
+
 **Nincs árrés és nincs ügynökségi jutalék** — beszerzési áron megy tovább. (Ez a CSL
 sajátja; az ERSTE-s házaknál 15% jutalék van a hirdetési kereten.)
 
@@ -255,15 +275,23 @@ valós eset adott okot: a TikTok-számla `Projekt költség` típussal érkezett
 lett saját költségtípusa, és enélkül egyszerre esett volna ki az előleg-egyenlegből
 és bele a továbbszámlázási listába. Mindkét workflow jelzi, ha ilyet talál.
 
-### Állapot 2026-09-02-án (2026. augusztusi köteg)
+### Állapot 2026-09-02-án
 
 | | |
 |---|---|
-| Továbbszámlázandó | **5 tétel · 355 811 Ft** |
-| Kihagyva (júliusi kötegben már számlázva) | 2 tétel · 702 176 Ft |
-| Futó nyilvántartás: költség 2026-tól | 11 298 606 Ft |
-| Futó nyilvántartás: kiszámlázott projektbevétel | 9 679 210 Ft |
-| Különbözet | −1 619 396 Ft |
+| Nyitott összesen (2026-07-01 óta) | **19 tétel · 4 447 152 Ft** |
+| ebből 2026. augusztus | 5 tétel · 355 811 Ft |
+| ebből 2026. júliusból nyitva maradt | 14 tétel · 4 091 341 Ft |
+| Kihagyva (júliusi kötegben már számlázva) | 25 számla · 3 633 163 Ft |
+
+A júliusi nyitott tételek a nagyok felől: Debreceni Campus `SZA02024/2026`
+2 050 000, Gifie `2026-000192` 730 000, REKLÁMAJÁNDÉK `VS-4524/2026` 447 827,
+Debreceni Campus `SZA01902/2026` 304 941, Szűcs Network `2026-E/03915` 244 980,
+RKP `RKP-2026-4024` 154 776. **Ez nem hiba-lista**: ezek egy része biztosan saját
+költség. A lista arra való, hogy tételesen el lehessen dönteni.
+
+A két Rapidnyomda-számla (`E-RPD-2026-3029` +31 898 és `E-RPD-2026-3410` −31 898)
+sztornó-pár, nettó hatásuk nulla.
 
 A besorolatlan oszlop **nullára ment**: a korábban típus nélküli augusztusi kimenő
 számlák (MS-2026-220…226) azóta megkapták a bevételtípust, és a júliusi sorban
