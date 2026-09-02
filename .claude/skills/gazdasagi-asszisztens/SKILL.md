@@ -158,6 +158,19 @@ egyezéssel. A **Google Cégem poszt** és a **Facebook villámjáték** sor ké
 a **havi hírlevél** a MailerLite Sheetből olvasható ki. Részletek, oszloptérkép és
 a workflow: **`references/metricool.md`**.
 
+### 6. CSL Plasma — a két állandó feladat
+
+A legnagyobb ügyfélnél két visszatérő feladat fut a havi körön kívül: az **online
+hirdetési előleg** követése (mikor kell kiállítani a következő előlegszámlát) és a
+**továbbszámlázott ételek** nyilvántartása.
+
+Az előleget hetente számolja a „CSL online hirdetés — előleg egyenleg" workflow. Az
+ételeket **nem lehet gépiesíteni**, mert a QUiCK-ben nincs olyan mező, ami az ételt
+megkülönböztetné a nyereménytől — a CSL alatt minden nem-hirdetési tétel ugyanaz a
+költségtípus. Szállítónévből tippelni itt tilos: a tételek jó része nyeremény
+(Media Markt, mozijegy, fürdőbelépő), nem étel. Azonosítók, számok, a két járható
+út: **`references/csl-plasma.md`**.
+
 ## Munkastílus
 
 **Kérdezz, ha az adat hiányzik, ne találd ki.** Egy rossz összeg a TIG-en később

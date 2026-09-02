@@ -157,7 +157,9 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 | Havi projekteredmény | `lp8PRrSr24AaAX0i` | aktív | 5-én |
 | Terv-tény adatok — Napfény Park | `U4kxI4bcq3lTGXWw` | aktív | 1-jén 7:15 |
 | Akcióterv aktivitás — 3 ház | `1dVfn4OzDpzy2NuP` | aktív | 1-jén 7:30 |
+| CSL online hirdetés — előleg egyenleg | `ZWAuVsE43azVXEsc` | aktív | hétfőnként 8:00 |
 | QUiCK API felderítés | `0wPY8RdQvAF0iETH` | inaktív | kézi |
+| CSL felderítés | `HbaCk0V2b5Dl57iy` | inaktív | kézi |
 | QUiCK artifacts felderítés | `kZMflW5ySpgnWSvE` | inaktív | kézi |
 | Metricool felderítés | `khPbJC9XtY6zLzMl` | inaktív | kézi |
 | Akcióterv forrás felderítés | `KA7Thkm5wQbzL2PY` | inaktív | kézi |
