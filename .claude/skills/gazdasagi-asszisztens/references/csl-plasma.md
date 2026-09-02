@@ -21,22 +21,23 @@ Ezek nélkül semmi nem működik, és ha a QUiCK-ben átnevezik őket, **itt ke
 | Bevételtípus — projekt | `10304` | Projekt bevétel |
 | Költségtípus — Meta | `91291` | Facebook |
 | Költségtípus — Google | `91283` | Google Ads |
+| Költségtípus — TikTok | `152134` | TikTok költség |
 | Költségtípus — minden más | `91110` | Projekt költség |
 
 A `revenue_types` és `expense_types` szótár **magában a válaszban jön**: a
 `/1/incomes/` `results.revenue_types[]`, a `/2/expenses/` `results.expense_types[]`
 alatt, `{id, name}` alakban. Nem kell külön végpontot keresni hozzá.
 
-A rendszerben összesen 12 költségtípus van: Oktatás, EV, Projekt költség,
-Üzemeltetés, Könyvelés, Rezsi, Szoftver, Autó, Google Ads, Facebook, Biztosítás,
-Hiteltörlesztés.
+Költségtípusok: Oktatás, EV, Projekt költség, Üzemeltetés, Könyvelés, Rezsi,
+Szoftver, Autó, Google Ads, Facebook, Biztosítás, Hiteltörlesztés, **TikTok
+költség** (ez utóbbi 2026 szeptemberében jött létre, épp emiatt a kimutatás miatt).
 
 ## 1. Online hirdetési előleg — „CSL online hirdetés — előleg egyenleg"
 
 `ZWAuVsE43azVXEsc`, aktív, **hetente hétfőn 8:00**, levél az info@ címre.
 
-> hátralévő előleg = Σ (CSL-címkés kimenő számlák `11264`-es tételei)
-> − Σ (CSL-címkés szállítói számlák `91291` + `91283` költségtípusú tételei)
+> hátralévő előleg = nyitó egyenleg + Σ (CSL-címkés kimenő számlák `11264`-es tételei)
+> − Σ (CSL-címkés szállítói számlák `91291` + `91283` + `152134` költségtípusú tételei)
 
 A levél megmondja, hány havi átlagos költésre elég még a maradék, és szól, ha egy
 havinál kevesebb — ez a jelzés arra, hogy **ideje kiállítani a következő előleget**.
@@ -46,10 +47,26 @@ szállítónév elgépelhető és változhat, a típus viszont a könyvelési d�
 
 Mellette van egy **szállítói védőháló** (Meta, Google Ireland, TikTok): ha egy ismert
 platform számlája nem hirdetési típust kapott, a workflow akkor is beveszi, és külön
-kiírja, hogy a típust javítani kell. Erre valós eset adott okot: a **TikTok**-számla
-(40 000 Ft, 2026-01-19, `BDUK2026366294`) `Projekt költség` típust kapott, és enélkül
-egyszerre esett volna ki az előleg-egyenlegből **és** bele a továbbszámlázási listába.
-A védőháló megakadályozza mindkettőt, de a típust a QUiCK-ben így is javítani kell.
+kiírja, hogy a típust javítani kell. Erre valós eset adott okot: a TikTok-számla
+(40 000 Ft, 2026-01-19, `BDUK2026366294`) eredetileg `Projekt költség` típust kapott,
+és enélkül egyszerre esett volna ki az előleg-egyenlegből **és** bele a
+továbbszámlázási listába. (Ez a konkrét számla azóta `TikTok költség` típusú.)
+
+### A TikTok-számlák hiánya
+
+**Ez a kimutatás jelenleg tudottan hiányos, és a hiány iránya ismert.** A TikTok
+számláit a rendszer **CSL Plasma névre** állította ki, nem a Marketing Store-ra,
+ezért nem könyvelhetők le. A QUiCK ma **egyetlen** TikTok-számlát ismer (a fenti
+40 000 Ft-osat), a többi hiányzik.
+
+Következmény: a levélben látszó hátralévő előleg a valóságosnál **több**. A workflow
+ezt nem hallgatja el — a fejlécben és külön figyelmeztetésben is kiírja, amíg a
+`TIKTOK_SZAMLAK_HIANYOZNAK` kapcsoló `true`.
+
+Ha megvannak a helyesbített számlák: tedd az összegeket az `ISMERT_MEG_NEM_KONYVELT`
+listába (`platform: 'TikTok'`), vagy — ha addigra lekönyvelték őket — csak vedd a
+kapcsolót `false`-ra. A lista **önsemlegesítő**: egy kézi tétel automatikusan kiesik,
+amint az adott hónapra az adott platformon megjön a valódi számla.
 
 ### A fordulónap és a nyitó egyenleg
 
