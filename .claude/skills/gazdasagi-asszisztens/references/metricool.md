@@ -106,8 +106,94 @@ Ezek már éles használatban vannak az „SM Audit" workflow-kban:
 ```
 GET /api/v2/analytics/posts/facebook?from=...T00:00:00&to=...T23:59:59&blogId=&userId=&timezone=&limit=
 GET /api/v2/analytics/posts/instagram?...
+GET /api/v2/analytics/stories/facebook?...
+GET /api/v2/analytics/stories/instagram?...
 GET /api/v2/analytics/competitors/facebook?...
 ```
+
+**Két csapda, amibe bele is estem:**
+
+1. **A `/v2/analytics/` végpontok `{ data: [...] }` burkolatot adnak**, nem sima tömböt — ez
+   más, mint a `/stats/` hirdetési ág. Ha a szűrő a felső szinten keres, némán 0-t kapsz.
+2. **A poszt-objektumon `timestamp` van, a story-objektumon viszont csak `created`**, és a
+   `created` nem string, hanem `{ dateTime, timezone }` objektum — a `timezone` ráadásul
+   `Europe/Madrid` (a Metricool székhelye), nem budapesti. Havi bontásnál ezt kezelni kell,
+   különben minden story „ismeretlen" hónapba esik.
+
+Ha csak darabszám kell, van egyszerűbb út is: `timelines`-szal `subject=posts&metric=count`
+napi bontású sorozatot ad, aminek az összege bitre ugyanaz, mint a poszt-lista hossza
+(2026. július, NP: mindkettő 35).
+
+## A marketing akcióterv tábla (aktivitás-darabszámok)
+
+Külön tábla a terv-ténytől: `marketing akcióterv-2026.-NFP-CK-TC.xlsx`
+(`1DdBlVL-4YWYD9asUa0GFrQBllf8En6SE`), három lap (`NFP 2026.mkting`,
+`CK 2026.mkting`, `TC 2026.mkting`), azonos szerkezettel. Havonta Terv/Tény
+oszlop-pár: E/F jan, G/H feb, I/J már, K/L ápr, M/N máj, O/P jún, Q/R júl,
+**S/T aug**, U/V szep, W/X okt, Y/Z nov, AA/AB dec.
+
+Két dolog miatt **nem írható gépből**: `.xlsx` (nem natív Google Sheet, tehát a Sheets
+API nem ír bele), és **külső tulajdonosé** (muller.mary@szubjektiv.com). Ugyanaz a
+szállítási minta kell, mint a terv-ténynél: a gép megmondja, mi kerüljön melyik cellába.
+
+### Melyik sor honnan jön
+
+| Sor | Tétel | Forrás | Állapot |
+|---|---|---|---|
+| 5 | FB posztok | `/v2/analytics/posts/facebook` hossza | gépesíthető, de lásd lent |
+| 6 | IG posztok | `/v2/analytics/posts/instagram` hossza | gépesíthető, de lásd lent |
+| 7 | FB + IG story | `/v2/analytics/stories/facebook` hossza | **megbízható** |
+| 8 | Google Cégem poszt | — | **nem jön a Metricoolból** |
+| 9 | Facebook villámjáték | — | **nem gépesíthető** |
+| 12 | havi hírlevél | MailerLite Sheet | már megvan |
+
+**A 7. sor nem összeg.** A neve „FB + IG story", de az érték a **Facebook story
+darabszáma** — ugyanaz a story megy ki mindkét felületre, és egyszer számít. A
+Napfény Parknál mind a hét kitöltött hónapban bitre stimmel (jan 0, feb 0, már 4,
+ápr 3, máj 4, jún 4, júl 4); az IG story ehhez képest márciusban 3-at ad, tehát az
+FB-ág a helyes. A kettő összeadása (8) durván félrevinné.
+
+**A 8. sor: a `gbpData` ott van a márka `networksData`-jában, adat viszont nincs.**
+A `/v2/analytics/posts/{network}` ág egyáltalán nem ismer Google Cégem hálózatot —
+`gmb`, `gbp`, `googlebusiness` mind a Metricool SPA HTML-jét adja vissza, nem API-választ
+(tehát 404-szerű átesés, nem hiba). A `timelines` ágon `gmb` **érvényes** network név
+(a 400-as válasz kilistázza: `linkedin, facebook, fbgroup, pinterest, facebookads,
+adwords, gmb, twitter, instagram, instagram_business, youtube, twitch, blog, tiktokads,
+tiktok, tiktokbusiness, threads, bluesky`), de `subject=posts&metric=count` üres
+`values` tömböt ad — a kapcsolat él, poszt-analitika viszont nem folyik be rajta.
+Ez a sor tehát kézi marad, amíg a Metricoolban a GBP-mérés nincs rendbe téve.
+
+**A 9. sor: a szövegszűrés nem működik.** A `villámjáték|nyereményjáték` mintára
+2026. jan–aug között 19 találat jött a NP Facebook-posztjaira, miközben a tábla
+havi 1-et mutat. A találatok között eredményhirdetés, partneri játék (Deichmann,
+REGIO) és klubtag-akció is van — ezek nem „villámjátékok". Kampány-névkonvenció
+nélkül ezt nem szabad megtippelni.
+
+### A hitelesítő teszt — és ahol nem egyezik
+
+Ugyanaz a módszer, mint a hirdetési költésnél: a gépi számot a táblában **már kézzel
+bevitt** hónapokhoz mérjük.
+
+| Hónap | Találat | Megjegyzés |
+|---|---|---|
+| 2026. július | **9 / 9** | mindhárom ház, mindhárom sor bitre |
+| 2026. június | 5 / 9 | **mindhárom háznál +1 FB poszt**, plusz a TC-nél +1 IG |
+
+A júniusi eltérés nem zaj: **pontosan +1, mind a három háznál, ugyanabban a hónapban.**
+Ez közös okra utal — vagy kiment egy poszt, ami a havi elszámolásba nem került bele,
+vagy a kézi szám a poszttervből jön, nem a tényleges kimenetből. A story-sor
+mindkét hónapban, mindhárom háznál hibátlan.
+
+**Amíg ez nincs tisztázva, a 5./6. sort felülvizsgálatra kell adni, nem vakon beírni.**
+A 2026-01..08 éves NP-összevetés ugyanezt mutatja: FB 6/7, IG 5/7, story 7/7.
+
+### A felderítő workflow
+
+`KA7Thkm5wQbzL2PY` („Akcióterv forrás felderítés"), inaktív, kézi, **csak olvas**.
+Egy `Keresek` Code node állítja össze a 3 ház × 3 lekérdezés = 9 hívást, egy HTTP node
+futtatja őket, az `Osszegzes` pedig **sorrend szerint** párosítja vissza a válaszokat
+(a `{data:[...]}` burkolat miatt hívásonként egy item marad, tehát a sorrend tartható).
+A hónap az `ev`/`ho` konstansban állítható.
 
 ## Amit a Metricool NEM tud
 
