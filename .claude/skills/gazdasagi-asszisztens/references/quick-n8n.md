@@ -160,6 +160,7 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 | CSL online hirdetés — előleg egyenleg | `ZWAuVsE43azVXEsc` | aktív | hétfőnként 8:00 |
 | QUiCK API felderítés | `0wPY8RdQvAF0iETH` | inaktív | kézi |
 | CSL felderítés | `HbaCk0V2b5Dl57iy` | inaktív | kézi |
+| Corso Shopping Week — levélgyűjtés | `VHZwFy1Et7zRtZlO` | inaktív | kézi |
 | QUiCK artifacts felderítés | `kZMflW5ySpgnWSvE` | inaktív | kézi |
 | Metricool felderítés | `khPbJC9XtY6zLzMl` | inaktív | kézi |
 | Akcióterv forrás felderítés | `KA7Thkm5wQbzL2PY` | inaktív | kézi |
@@ -168,6 +169,33 @@ Ezért kell a **bankszámlakivonat külső forrásból** — lásd lentebb az OT
 A hónap 1-jei torlódás miatt az indítások szét vannak húzva: 6:00 hiányzó számlák,
 7:00 könyvelési csomag, 7:15 terv-tény, **7:30 akcióterv**, 7:40 MailerLite, 8:00 OTP.
 Ha új havi workflow kell, keress szabad sávot — a Drive-kvóta közös.
+
+## Gmail: a Küldött mappa nem feltétlenül látszik
+
+A ház-postafiókoknál (`corso@`, `napfenypark@`, `targetcenter@`) a Gmail node
+`in:sent` lekérdezése **szinte üres** — a corso fióknál 2026 júliusa óta mindössze
+2 küldött levél jött vissza, pedig a kolléganő rendszeresen küld róla.
+
+Az ok nem hiba, hanem munkamódszer: a kolléganő **delegált hozzáféréssel, a saját
+fiókjából** küld „Corso Kaposvár marketing" névvel, ezért a küldött másolat az ő
+postafiókjában marad, nem a közösben. (Egy `corsosok@marketingstore.hu` csoport is
+van a képben.)
+
+**Ez akkor számít, ha azt kell megmondani, kinek küldtünk és ki nem válaszolt.**
+A kimenő leveleket ilyenkor csak közvetve látod: a partnerek válaszaiba idézett
+fejlécből (`Feladó:` / `Von:` / `Küldve:` blokk) és az automatikus válaszokból.
+A `subject:"Automatikus válasz"` lekérdezés külön is hasznos: elárulja, kinek ment
+egyedi megkeresés akkor is, ha érdemi válasz nem érkezett rá.
+
+**A hiánylistát tehát mindig jelöld meg**: a körlevél címzettjeire biztos, az egyedi
+utánkövetésekre nem teljes, amíg a küldő saját fiókja nincs bekötve.
+
+Két további Gmail-buktató ugyanitt:
+
+- **`simple: false` esetén nincs `internalDate`**, csak a fejlécből jövő `date`.
+  Ha `internalDate`-re építesz, minden levél 1970-be esik.
+- A `date` fejléc **UTC-ben** jön, a levelekben idézett magyar időpontok viszont
+  helyi idő (CEST, +2). Egy „válasz az eredeti előtt" látszat ebből adódik.
 
 **Mielőtt bármelyiket elindítod:** az aktív workflow-k mellékhatással járnak — négy
 e-mailt küld, egy Drive-ra ír és mappát hoz létre. Ne futtasd őket próbaképp. A két
