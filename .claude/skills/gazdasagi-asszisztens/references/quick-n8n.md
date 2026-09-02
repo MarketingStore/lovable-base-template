@@ -797,5 +797,10 @@ valódi nyereség nem is a papír, hanem hogy **egy fájl és egy nyomtatási fe
   `marketingstorekft@gmail.com`, `napfenypark@marketingstore.hu`,
   `corso@marketingstore.hu`, `targetcenter@marketingstore.hu`,
   `targetcenterkecskemet@gmail.com`.
+- **Ha ugyanahhoz a fiókhoz több credential is van, azt válaszd, amelyik éles
+  workflow-ban fut.** A `corso@` címhez például kettő létezett; a megtartott
+  `S3PxTrACrXFm4cj1`, mert az „1. ág — Bérlői akció email begyűjtés" azt használja.
+  Ellenőrizni úgy lehet, hogy megnézed egy éles workflow node-jának `credentials`
+  mezőjét — a `list_credentials` nem mondja meg, melyik van bekötve.
 - A meglévő négy workflow jó minta a hívások felépítésére — nézd meg őket, mielőtt
   nulláról írsz lapozást vagy artifact-letöltést.
