@@ -205,6 +205,30 @@ nem hirdetési költség volt, augusztus 10-én viszont 3 633 163 Ft ment ki
 továbbszámlázásra — a 61%-a. Tehát a költség egy része saját, és ezt csak ember tudja
 eldönteni.
 
+### A legveszélyesebb csapda: az átcsúszó rendezvényszámla
+
+A tételeket a **teljesítési dátum** sorolja hónapba. Egy rendezvény számlái viszont
+jellemzően a **következő hónap első napjaiban** érkeznek, miközben az elszámolás már
+megtörtént az előző köteggel. Ilyenkor a számla a QUiCK szerint a következő hónaphoz
+tartozik, és **másodszor is kimenne továbbszámlázásra**.
+
+Valós eset: a miskolci Centrum-nyitás (júliusi köteg) két számlája 2026-08-03-i
+teljesítéssel érkezett, és 702 176 Ft-tal — az augusztusi lista **66%-ával** —
+duplikálta volna a számlázást:
+
+| Számla | Szállító | Nettó | Mi ez |
+|---|---|---|---|
+| `BAFFO-2026-102` | AVALON PARK Kft. | 612 176 | Catering |
+| `MSTRL-2026-69` | Mistral Műsoriroda D.J. Shop Bt. | 90 000 | Hangtechnika |
+
+Ezért van a kódban egy **`MAR_TOVABBSZAMLAZVA` lista** számlaszám szerint. Ami rajta
+van, kiesik a továbbszámlázandó listából, de a **futó nyilvántartásban benne marad** —
+valós költség volt, csak már elszámoltuk. A levél külön, sárga táblában felsorolja őket.
+
+**Minden köteg után nézd meg**, van-e a következő hónap elején olyan számla, ami az
+épp lezárt köteghez tartozik, és vedd fel a listára. Ezt a workflow nem tudja
+magától eldönteni: a QUiCK-ben semmi nem köti össze a számlát a rendezvénnyel.
+
 **Nincs árrés és nincs ügynökségi jutalék** — beszerzési áron megy tovább. (Ez a CSL
 sajátja; az ERSTE-s házaknál 15% jutalék van a hirdetési kereten.)
 
@@ -224,11 +248,26 @@ projektbevétel, csak hiányzik róluk a típus.
 ### A két kimutatás nem fedheti át egymást
 
 A hirdetési tételek szándékosan kimaradnak innen, mert azok az előleg-egyenlegen
-futnak. A szűrés elsősorban **költségtípus** szerint megy, de van egy **szállítói
-védőháló** is (Meta, Google Ireland, TikTok): a TikTok-számla ugyanis tévesen
-`Projekt költség` típust kapott, és enélkül egyszerre esett volna ki az
-előleg-egyenlegből és bele a továbbszámlázási listába. Mindkét workflow jelzi, ha
-ilyet talál, hogy a QUiCK-ben javítani lehessen a típust.
+futnak. A szűrés **költségtípus** szerint megy — `91291` Facebook, `91283` Google Ads,
+`152134` TikTok költség —, mellette **szállítói védőháló** is van (Meta, Google
+Ireland, TikTok) arra az esetre, ha egy platformszámla rossz típust kapna. Erre
+valós eset adott okot: a TikTok-számla `Projekt költség` típussal érkezett, amíg nem
+lett saját költségtípusa, és enélkül egyszerre esett volna ki az előleg-egyenlegből
+és bele a továbbszámlázási listába. Mindkét workflow jelzi, ha ilyet talál.
+
+### Állapot 2026-09-02-án (2026. augusztusi köteg)
+
+| | |
+|---|---|
+| Továbbszámlázandó | **5 tétel · 355 811 Ft** |
+| Kihagyva (júliusi kötegben már számlázva) | 2 tétel · 702 176 Ft |
+| Futó nyilvántartás: költség 2026-tól | 11 298 606 Ft |
+| Futó nyilvántartás: kiszámlázott projektbevétel | 9 679 210 Ft |
+| Különbözet | −1 619 396 Ft |
+
+A besorolatlan oszlop **nullára ment**: a korábban típus nélküli augusztusi kimenő
+számlák (MS-2026-220…226) azóta megkapták a bevételtípust, és a júliusi sorban
+jelennek meg — ott a kiszámlázott 3 899 332 Ft.
 
 ## A felderítő workflow
 
