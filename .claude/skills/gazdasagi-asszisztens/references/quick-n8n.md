@@ -170,6 +170,35 @@ A hónap 1-jei torlódás miatt az indítások szét vannak húzva: 6:00 hiányz
 7:00 könyvelési csomag, 7:15 terv-tény, **7:30 akcióterv**, 7:40 MailerLite, 8:00 OTP.
 Ha új havi workflow kell, keress szabad sávot — a Drive-kvóta közös.
 
+## Meta hirdetési számlák: nincs API, és a levél sem jó helyre megy
+
+**A Meta nem ad publikus API-t a számla-PDF-ekhez** (2026-os állapot). A Marketing API
+költést ad (`/act_<id>/insights` → `spend`), dokumentumot nem. A `business_invoices`
+végpont a Business objektumon létezik, de az a **havi számlázásos (extended credit)**
+ügyfeleké, és ott is csak metaadat.
+
+A Marketing Store amúgy sem tartozik oda: **72 Meta-számla 2025 októbere óta**, vagyis
+havi 6-7. Ez **küszöbalapú kártyás terhelés** — a Meta minden küszöbelérésnél terhel és
+nyugtáz. Havi számlázásnál hónaponként pontosan egy dokumentum lenne.
+
+**Amit ellenőriztem 2026-09-02-án:** a Meta számlalevelei **sem az `info@`, sem a
+`marketingstorekft@gmail.com` fiókba nem érkeznek** (az info@-on 2026 májusa óta 2 db
+„Confirm your email address" van, csatolmány nélkül; a gmailes fiókban nulla). Ugyanez
+a TikTokra: egyik fiókban sincs számlalevél.
+
+Ez azért számít, mert a „Számla továbbítás a QUiCK-re" (`VJX0cdciKa4JCjuV`) 15 percenként
+figyeli az info@-ot, és a PDF/kép csatolmányos számlaleveleket automatikusan továbbítja.
+**Ha a Meta-fiókok számlázási értesítési címe az info@ lenne, ez a lánc magától
+működne** — nem kell hozzá se API, se scraping. A számlázási kapcsolattartó jelenleg
+egy olyan postafiók, amihez az n8n nem fér hozzá.
+
+Amíg ez nincs átállítva, a reális út a **Business Suite → Billing & Payments →
+Documents** fül havi tömeges ZIP-letöltése (Admin vagy Finance Editor jog kell hozzá) —
+havi egy kattintás hét helyett.
+
+Böngésző-automatizálást (Playwright) ne építs rá: bejelentkezés- és 2FA-függő, a Meta
+aktívan töri a scrapereket, havi könyvelési folyamat nem állhat rajta.
+
 ## Gmail: a Küldött mappa nem feltétlenül látszik
 
 A ház-postafiókoknál (`corso@`, `napfenypark@`, `targetcenter@`) a Gmail node
