@@ -56,6 +56,7 @@ frissíteni, ha bővül.
 | Pepco | Dudás F. | `fdudas@pepco.eu` |
 | CCC | Alexa Fanny | `fanny.alexa@ccc.eu` |
 | Deichmann | Luisa Weinmann | `luisa_weinmann@deichmann.com` |
+| Bubble House | — | (a láblécben szerepel; e-mail cím pótlandó) |
 | — | — | `7400rosco@gmail.com` |
 | — | — | `csabamaria@gmail.com` |
 | — | — | `drcsikosaniko@gmail.com` |
@@ -78,3 +79,10 @@ Kata Bugár-Mészáros (`kmeszaros@pepco.eu`).
   kell keresni, különben csendben kimarad a felajánlásokból és a láblécből is.
 - **A kupon-jóváhagyás körbe jár.** Több bérlő kéri, hogy a végleges kuponszöveget küldjük
   vissza csekkolásra. Amíg ez nincs lezárva, az adott akcióblokk szövege nem végleges.
+- **A szóbeli ígéret nem felajánlás, amíg nyomdába nem megy.** Előfordul, hogy egy bérlő
+  telefonon jelzi, hogy „elvileg" ugyanazt adja, mint legutóbb. Ez elég ahhoz, hogy a
+  grafika elinduljon, de a leadás előtt írásban le kell zárni: ha visszalép, a
+  nyereménycsempe **és** a lábléc-logó is hibás lesz egy már kinyomtatott anyagon.
+- **Ha egy felajánlásnál nem derül ki a felajánló, nézd meg az előző kiadás anyagát.** A
+  nyereménycsempéken ott a logó, a láblécben pedig a teljes bérlői kör — ebből általában
+  kikövetkeztethető, de **meg kell erősíttetni**, mert rossz logó kerülne a csempére.

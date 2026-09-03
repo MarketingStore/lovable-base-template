@@ -31,7 +31,8 @@ Ez a váz minden kiadásban azonos, és ez határozza meg, mi kerül melyik anya
    bővítése, ezért ez a mondat mindig szerepel a nagy felületeken.
 3. **Kitelepülés / Shopping Day.** Az utolsó napon (jellemzően szombat, 10:00–16:00,
    a központ színpadánál) **szerencsekerék** működik: adott értékű vásárlás felett
-   pörgetni lehet, és **azonnali** ajándékot lehet nyerni.
+   pörgetni lehet. A kerék részben azonnali ajándékot ad, részben **visszacsatol a
+   fősorsolásba** (lásd lent).
 4. **Bérlői akciók.** A bérlők a promóció idejére saját kedvezményt hirdetnek. Ez
    független a nyereményektől.
 
@@ -54,6 +55,27 @@ kerékre szól, és a fősorsolás nyereményblokkja szinte üresen marad. Ilyen
 átcsoportosítunk, vagy a blokk elrendezését kell kevesebb csempére áttervezni — de ezt
 **a grafika indítása előtt** kell eldönteni, mert az A5 előlap fele ez a blokk.
 
+## A szerencsekerék grafikája sosem változik
+
+A kerék (900 × 900 mm) **generikus kategóriákkal** dolgozik, nem konkrét nyereménynevekkel,
+ezért kiadásonként újrahasznosítjuk. Húsz szegmens, négyféle mező:
+
+| Mező | Mit jelent |
+|---|---|
+| **I. ajándék** | helyszíni ajándék, egyik kör |
+| **II. ajándék** | helyszíni ajándék, másik kör |
+| **2× esély** | nem ajándék — **duplázza a fősorsolási esélyt** |
+| **3× esély** | nem ajándék — **triplázza a fősorsolási esélyt** |
+
+Két következménye van, és mindkettőt könnyű elfelejteni:
+
+- **Nyomdai teendő nincs**, de **lebonyolítási igen**: a kerekes felajánlásokat be kell
+  sorolni „I." és „II. ajándék" kategóriába, és listát adni róla a kitelepülésen dolgozó
+  kollégának. Enélkül a helyszínen kell rögtönözni.
+- A **2× / 3× esély** mezők miatt a kerék **nem zárt rendszer**: a regisztrációs oldalnak
+  tudnia kell kezelni a megszorzott esélyeket. Ez nem grafikai kérdés, de a promóció
+  működését érinti.
+
 ## A nyomdai anyagok
 
 Öt tétel, mindig ugyanezek. A méretek a leadott PDF-ekből:
@@ -64,6 +86,7 @@ kerékre szól, és a fősorsolás nyereményblokkja szinte üresen marad. Ilyen
 | A7 kártya | 74 × 105 mm | 1 | dátum + QR |
 | A5 szórólap | 148 × 210 mm | 2 | **ez a nehéz** |
 | A1 plakát | 594 × 841 mm | 1 | változatonként |
+| Szerencsekerék | 900 × 900 mm | 1 | **nincs** — újrahasznosul |
 
 Az A1-ből több változat készül, fókusz szerint: **szerencsekerék**, **promóció-leírás**,
 **csak QR**, **bérlői akciók**. Nem mindegyik készül el minden kiadásban — a bérlői
