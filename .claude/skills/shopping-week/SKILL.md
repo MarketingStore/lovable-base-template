@@ -93,7 +93,12 @@ Ami ilyenkor jellemzően előjön:
   később vitatható.
 - **A szöveg gyakran csatolmányban jön.** Ilyenkor a levéltörzs csak annyit mond, hogy
   „csatolok egy ajánlatot" — a tényleges szöveg nélkül a blokk nem szedhető, tehát ezt
-  külön be kell kérni.
+  külön be kell kérni. Ami érkezik, jellemzően a bérlő **saját kész kreatívja** (banner,
+  plakátbetét) a saját méretében, nem a mi kuponunk: a tartalmat átvesszük, az
+  elrendezést újraszedjük.
+- **Termékáras ajánlatnál kell az egységár** (Ft/l, Ft/kg). A bérlők kérni is szokták, és
+  általában **rajta van a saját anyagukon** — nem kell kiszámolni, csak átvinni. Ha
+  mégis számolod, a **kedvezményes** árból számold, és ellenőrizd a bérlő számával.
 - **Visszaküldés jóváhagyásra.** Több bérlő kéri, hogy a kész kupont lássa. Ez a
   nyomdai határidő elé egy plusz kört tesz, számolj vele.
 
