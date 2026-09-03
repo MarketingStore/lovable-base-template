@@ -13,10 +13,20 @@ Ebből az következik, hogy **a két felületet külön kell ellenőrizni**: nem
 a szórólapot és feltételezni, hogy az online ugyanolyan. Szeptemberben pont fordítva
 állt a munka: a nyomdain a levél maradhatott, az onlineon a virágot kellett cserélni.
 
-## 2. Online nincs Erste-logó
+## 2. A kreatívokon nincs Erste-logó — a landingen van
 
-A nyomdai láblécben mindig ott van, az onlineon csak a felajánló bérlők szerepelnek.
-Az online logósor tehát eggyel rövidebb. Szándékos, ne egységesítsd.
+Ez nem egy „online" szabály, hanem kettő, és a kettőt ne mosd össze:
+
+| Felület | Erste a logósorban? |
+|---|---|
+| Nyomdai anyagok | **igen** |
+| Meta- és Google-kreatívok (C változat) | **nem** |
+| Landing oldal | **igen** — 2026 szeptemberében így döntött az ügyfél |
+
+Vagyis három különböző hosszúságú logósorral dolgozol ugyanabban a kiadásban: a nyomdai
+és a landing sora azonos (bérlők + Erste), a kreatívoké eggyel rövidebb. Szándékos,
+ne egységesítsd — és a briefben érdemes kiírni mindhármat, mert a grafikus különben
+az egyik sort viszi át mindenhova.
 
 ## 3. QR nem kell
 
@@ -66,17 +76,11 @@ kép itt nem használható.
 | Fejléc-banner | rózsaszín mező, logó + dátumsáv, szöveg nélkül | dátum + szezonális dísz |
 | Logó + dátum | fehér logó és a dátum átlátszó háttéren, rárakható | csak a dátum |
 | Modell + kerék | kivágott fotó a szerencsekerékkel | **semmit** — nincs rajta dátum és szezonális elem sem |
-| Logósor | a bérlői logók egy sorban | a felajánlók szerint |
+| Logósor | a bérlői logók egy sorban, **az Erstével együtt** | a felajánlók szerint |
 | Nyereménycsempék | nyereményenként egy önálló elem | mindegyik újra |
 
 A **modell + kerék** cutout az egyetlen elem az egész kiadásban, amihez tényleg nem kell
 hozzányúlni — érdemes tudni, mert időt spórol.
-
-### A landing logósora ellentmond az „online nincs Erste" szabálynak
-
-A közösségi kreatívokon (C változat) tényleg csak a bérlők vannak, a **landing logósorán
-viszont ott volt az Erste**. Vagyis vagy a landing kivétel, vagy tavasszal tévedésből
-került rá. Ezt kiadásonként **döntetni kell**, mert ettől függ a logók száma.
 
 ### A nyereménycsempe anatómiája
 

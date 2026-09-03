@@ -167,8 +167,11 @@ A láblécbe a **felajánlást tett bérlők** logói kerülnek. Amelyik bérlő
 felajánlást, annak a logója **lekerül** — akkor is, ha az előző kiadásban szerepelt. Ez
 könnyen elmarad, mert a sablonban benne van.
 
-**Az Erste Ingatlan Alapok logója csak a nyomdai anyagokra kell**, az onlineokra nem.
-Ezért az online logósor eggyel rövidebb, mint a nyomdai — ez szándékos, ne egységesítsd.
+**Az Erste Ingatlan Alapok logója a nyomdai anyagokra és a landing oldalra kell, a
+Meta- és Google-kreatívokra nem.** Ezért a kreatívok logósora eggyel rövidebb, mint a
+nyomdai és a landingé — ez szándékos, ne egységesítsd. Három sorral dolgozol tehát
+ugyanabban a kiadásban, és a briefben mindhármat írd ki, különben a grafikus az egyiket
+viszi át mindenhova.
 
 ## A nyereményérték-állítás
 
