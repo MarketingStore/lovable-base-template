@@ -72,6 +72,13 @@ Kata Bugár-Mészáros (`kmeszaros@pepco.eu`).
 - **A bérlő akciójának dátuma nem feltétlenül a promóció dátuma.** 2026 szeptemberében a
   Müller-akció 09.14–09.20. volt, miközben a Shopping Week 09.11–09.19. A szórólapon a
   bérlő saját dátumát kell feltüntetni.
+- **Ugyanaz a bérlő két különböző dátumot is adhat.** A Müller a 08.17-i levélben
+  „2026.09.15-09.20."-at írt, a 08.28-i véglegesített kuponszövegben viszont 09.14-et.
+  A **későbbi, kuponnak szánt szöveg** a mérvadó, de nyomtatás előtt igazoltasd vissza.
+- **A körlevél mit ígér a felajánlóknak.** „A felajánló üzletek logója megjelenik a
+  promóció során az online (landing oldal, Meta és Google Ads kreatívok) és az offline
+  (megállítótáblák, szórólapok, plakátok, attrapok) felületeken." Ez kötelezettség: ha
+  valamelyik felületen lemarad egy logó, azt a bérlő számon kérheti.
 - **A kézbesítési kérdéseket külön kell kezelni.** Több bérlő kérdezi, hogyan juttassa el
   az utalványt (postázás, üzletbe küldés a marketinges nevére, kódos átvétel). Ez nem
   grafikai kérdés, de a promóció lebonyolítását blokkolja, és határideje van.

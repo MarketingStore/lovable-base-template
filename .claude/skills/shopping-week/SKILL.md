@@ -76,9 +76,30 @@ Két következménye van, és mindkettőt könnyű elfelejteni:
   tudnia kell kezelni a megszorzott esélyeket. Ez nem grafikai kérdés, de a promóció
   működését érinti.
 
+## A bérlői akciók szövege a nyomtatvány tartalma
+
+A felajánlás-táblázat önmagában **nem elég a grafikushoz**: neki a kuponon megjelenő
+**szó szerinti szöveg** kell, mert az kerül a szórólap hátoldalára és a bérlői akciós
+plakátra. Ezt mindig a bérlő jóváhagyott leveléből vedd, ne fogalmazd újra.
+
+Ami ilyenkor jellemzően előjön:
+
+- **Jogi lábjegyzet.** A drogéria- és élelmiszerláncok hosszú kizáró listát adnak
+  (mire nem vonatkozik, összevonhatóság, árrésstop-rendelet, „viszonteladókat nem
+  szolgálunk ki"). Ez a bérlő felelőssége, **nem szerkesztjük** — az apró betű mérete
+  layout-kérdés, a tartalma nem.
+- **Elgépelés az eredetiben.** Ha a bérlő szövegében hiba van, ne javítsd magadtól:
+  kérdezz rá, és az ő válaszuk szerint szedd. Egy csendben javított jogi szöveg
+  később vitatható.
+- **A szöveg gyakran csatolmányban jön.** Ilyenkor a levéltörzs csak annyit mond, hogy
+  „csatolok egy ajánlatot" — a tényleges szöveg nélkül a blokk nem szedhető, tehát ezt
+  külön be kell kérni.
+- **Visszaküldés jóváhagyásra.** Több bérlő kéri, hogy a kész kupont lássa. Ez a
+  nyomdai határidő elé egy plusz kört tesz, számolj vele.
+
 ## A nyomdai anyagok
 
-Öt tétel, mindig ugyanezek. A méretek a leadott PDF-ekből:
+Öt tétel, ezek a visszatérőek. A méretek a leadott PDF-ekből:
 
 | Anyag | Méret | Oldal | Munkaigény |
 |---|---|---|---|
@@ -91,6 +112,12 @@ Két következménye van, és mindkettőt könnyű elfelejteni:
 Az A1-ből több változat készül, fókusz szerint: **szerencsekerék**, **promóció-leírás**,
 **csak QR**, **bérlői akciók**. Nem mindegyik készül el minden kiadásban — a bérlői
 akciós változat akkor indokolt, ha több akció gyűlt össze.
+
+**Ez az öt tétel nem feltétlenül a teljes lista.** A bérlőknek kiküldött körlevél azt
+ígéri, hogy a felajánlók logója megjelenik **online** (landing oldal, Meta és Google Ads
+kreatívok) **és offline** (megállítótáblák, szórólapok, plakátok, **attrapok**). Ha ezek
+közül bármelyik készül, ugyanaz a logósor és ugyanaz a dátumcsere vonatkozik rájuk —
+érdemes egy körben végigvinni, mert külön kezelve pont az egyiken marad benne a régi dátum.
 
 A tételes, anyagonkénti csere-listát lásd: `references/nyomdai-anyagok.md`.
 
