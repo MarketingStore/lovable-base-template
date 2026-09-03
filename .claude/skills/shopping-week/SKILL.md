@@ -121,8 +121,12 @@ akciós változat akkor indokolt, ha több akció gyűlt össze.
 **Ez az öt tétel nem feltétlenül a teljes lista.** A bérlőknek kiküldött körlevél azt
 ígéri, hogy a felajánlók logója megjelenik **online** (landing oldal, Meta és Google Ads
 kreatívok) **és offline** (megállítótáblák, szórólapok, plakátok, **attrapok**). Ha ezek
-közül bármelyik készül, ugyanaz a logósor és ugyanaz a dátumcsere vonatkozik rájuk —
-érdemes egy körben végigvinni, mert külön kezelve pont az egyiken marad benne a régi dátum.
+közül bármelyik készül, ugyanaz a dátumcsere vonatkozik rájuk — érdemes egy körben
+végigvinni, mert külön kezelve pont az egyiken marad benne a régi dátum.
+
+Az online kreatívokról külön fájl szól: `references/online-anyagok.md`. Nem elég a
+nyomdai anyagokat átnézni és feltételezni, hogy az online ugyanolyan — a szezonális
+díszítés és a logósor ott **eltér**.
 
 A tételes, anyagonkénti csere-listát lásd: `references/nyomdai-anyagok.md`.
 
@@ -159,11 +163,37 @@ hibát jelent.
 
 ## Lábléc logók
 
-A láblécbe a **felajánlást tett bérlők** logói kerülnek, plusz az **Erste Ingatlan Alapok**
-logó, ami **mindig** ott van (ez a ház tulajdonosa).
+A láblécbe a **felajánlást tett bérlők** logói kerülnek. Amelyik bérlő nem küldött
+felajánlást, annak a logója **lekerül** — akkor is, ha az előző kiadásban szerepelt. Ez
+könnyen elmarad, mert a sablonban benne van.
 
-Amelyik bérlő nem küldött felajánlást, annak a logója **lekerül** — akkor is, ha az előző
-kiadásban szerepelt. Ez könnyen elmarad, mert a sablonban benne van.
+**Az Erste Ingatlan Alapok logója csak a nyomdai anyagokra kell**, az onlineokra nem.
+Ezért az online logósor eggyel rövidebb, mint a nyomdai — ez szándékos, ne egységesítsd.
+
+## A nyereményérték-állítás
+
+Az online kreatívok főcíme konkrét összeget állít („játssz a több mint **50 000 Ft**
+értékű nyereményekért"). Ez **kiadásonként újraszámolandó** — nem vihető át.
+
+A keretbe **a szerencsekerék felajánlásai is beleszámítanak**, nem csak a fősorsolásé.
+Ez a bevett gyakorlat, és jellemzően ez viszi át a küszöbön: 2026 szeptemberében a
+fősorsolás önmagában 33–36 000 Ft volt, a hiányzó 14–17 000-et a kerékre felajánlott
+45 db drogériás saját márkás termék adta.
+
+Amit ehhez tudni kell:
+
+- A **tárgyi felajánlásokat be kell áraztatni** — a bérlő nem mindig adja meg. 2026-ban
+  két labda ≈ 10 000 Ft, egy gofri 1 000–2 000 Ft.
+- **Írd le a levezetést a briefbe.** Ha valaki rákérdez az összegre, az a válasz — és a
+  következő kiadásnál is ebből lehet kiindulni.
+- Ha a szám nem jön ki, három út van: beáraztatni a hiányzó tételeket, több felajánlást
+  kérni, vagy **elhagyni a konkrét összeget** a főcímből. Amit nem lehet: átvinni a
+  korábbi számot.
+
+## Egy szabály, ami könnyen kimarad
+
+A szerencsekereket **5 000 Ft feletti vásárlás** esetén lehet megpörgetni. Ez a küszöb
+szerepel az online kreatívokon, tehát ha változik, ott is át kell írni.
 
 ## A felajánlások begyűjtése
 
