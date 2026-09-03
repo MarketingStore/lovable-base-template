@@ -135,6 +135,10 @@ A 2026 tavaszi kiadásban négy különböző link volt: A1 `bit.ly/4vIjZX8`, A5
 `bit.ly/4cDMpZK`, A7 `bit.ly/4vMqTuA`, padlómatrica `bit.ly/4trrBMb`. Ennek az a célja,
 hogy mérhető legyen, melyik hordozó hozza a regisztrációkat.
 
+A bontás **hordozótípusonként** megy, nem plakátváltozatonként: a promóció-leíró és a
+QR-fókuszú A1 **ugyanazt** a linket viszi. Van olyan változat is, amelyiken egyáltalán
+nincs QR (a szerencsekerék-plakáton csak a webcím szerepel) — ez nem hiba.
+
 Ebből következik, hogy **a régi kód nem hagyható benne**: az új kampány kattintásai a
 régi kampány statisztikájába folynának bele, és mindkét mérés használhatatlan lenne.
 

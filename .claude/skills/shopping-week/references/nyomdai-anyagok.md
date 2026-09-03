@@ -57,20 +57,32 @@ vagy a fotó kisebbre vehető — ez a hátlap egyetlen valódi layout-döntése
 
 ## A1 plakát — 594 × 841 mm
 
-Több változat készül, fókusz szerint. Nem mindegyik kell minden kiadásban:
+Változatcsalád, fókusz szerint. Nem mindegyik kell minden kiadásban.
 
-- **Promóció-leírás** — a teljes mechanika, szerencsekerék vizuállal, hírlevél-mondattal
-- **Csak QR** — nagy QR-kód, minimális szöveg
-- **Szerencsekerék-fókusz**
-- **Bérlői akciók** — akkor indokolt, ha több akció gyűlt össze
+**Mind az A1-eken közös:** fejléc dátumsáv · lábléc az A5-tel azonos logósorral ·
+szezonális díszítés · és ha van rajta QR, az **ugyanaz az egy A1-es mérőlink** —
+a mérés hordozótípusonként megy, nem változatonként.
 
-| Típus | Teendő |
-|---|---|
-| Dátum | fejléc dátumsáv, mindegyik változaton |
-| Dátum | leíró változatban: „**[nap]-től**" és „Találkozzunk **[nap]-én** a … színpadnál!" |
-| QR | új mérőlink a QR-fókuszú változatra |
-| Logó | lábléc, az A5-tel azonos |
-| Szezon | levéldíszítés |
+| Változat | Van-e QR | Változat-specifikus teendő |
+|---|---|---|
+| **Promóció-leírás** | igen, a kerék alatt | „**[nap]-től**" és „Találkozzunk **[nap]-én** a … színpadnál!" |
+| **Csak QR** | igen, nagy méretben | csak a kód cseréje |
+| **Szerencsekerék** | **nincs**, csak webcím | főcím: „**[nap]-én** forgasd meg a szerencsekereket azonnali nyereményekért!" |
+| **Bérlői akciók** | opcionális | a teljes tartalom, lásd lent |
+
+### A bérlői akciós változat
+
+Akkor indokolt, ha **több akció** gyűlt össze: a szórólap hátoldalán három akció már
+apró, egy A1 viszont megállítótáblában elolvasható.
+
+A megszokott váz (rózsaszín fejléc, sárga törzs, „Részletek" sáv, lábléc) alá **annyi
+egyforma fehér kártya**, ahány akció van; kártyánként a bérlő logója, a kedvezmény nagy
+méretben, és az érvényesség dátuma — **a bérlő saját dátuma**, nem a promócióé.
+
+Egy elrendezési csapda: **a jogi lábjegyzetek hossza nagyon eltérő.** A drogérialáncoké
+több száz karakter, a többié egy mondat. Ha az apró betű a kártyába kerül, a kártyák
+kibillennek egymáshoz képest. Ilyenkor jobb csillagos hivatkozás a kártyán, és a teljes
+apró betű **egy közös lábjegyzet-sávban** a plakát alján.
 
 ## Előnézet készítése briefhez
 
