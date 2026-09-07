@@ -833,3 +833,74 @@ valódi nyereség nem is a papír, hanem hogy **egy fájl és egy nyomtatási fe
   mezőjét — a `list_credentials` nem mondja meg, melyik van bekötve.
 - A meglévő négy workflow jó minta a hívások felépítésére — nézd meg őket, mielőtt
   nulláról írsz lapozást vagy artifact-letöltést.
+
+## Ha az n8n kapcsolat kiesik — a tartalék adatút
+
+Ez a szakasz egy visszatérő üzemzavarról szól, és arról, mit építettünk ellene.
+
+### Mi a baj, és mi nem
+
+A QUiCK-hez **egyetlen út vezet**: a token csak az n8n „Quick API token" credentialban
+van, kiolvasni nem lehet. Ha az n8n MCP nem érhető el, nincs pénzügyi adat — se
+lekérdezni, se kimutatást készíteni nem lehet.
+
+Kétféle kiesés van, és **egyiket sem lehet a munkameneten belül megjavítani**:
+
+| | Mi történik | Mi a teendő |
+|---|---|---|
+| **Tranziens szakadás** | az MCP eldobja a kapcsolatot, majd magától visszajön | semmi, kivárni — általában egy körön belül helyreáll |
+| **Lejárt OAuth** | „requires authentication", a tool-ok eltűnnek | a felhasználónak kell újraengedélyeznie: claude.ai → Beállítások → Connectorok, vagy interaktív munkamenetben `/mcp` |
+
+**Ne ígérj automatikus újracsatlakozást.** Az n8n fiókszintű claude.ai connector, nem
+ebben a repóban konfigurált MCP — nincs `.mcp.json`, tehát nincs újrapróbálkozási vagy
+timeout-kapcsoló, amit át lehetne állítani. OAuth-folyamathoz böngésző kell, amit egy
+távoli munkamenet nem tud lefuttatni.
+
+**A kapcsolat helyreállása munkameneten belül nem feltétlenül látszik.** Ha a felhasználó
+újraengedélyezte, a tool-ok jellemzően csak a következő üzenetnél jelennek meg. Ellenőrizni
+`ToolSearch` -sel lehet (`+n8n`); ha nincs találat, ne kezdj bele n8n-t igénylő munkába,
+hanem mondd meg, hogy még nem látszik.
+
+### Amit ez ellen tenni lehet: legyen az adat máshol is
+
+A kapcsolatot nem tudjuk megbízhatóbbá tenni, a **függőséget** viszont igen. A minta már
+létezik a rendszerben: a napi pénzügyi pozíció a `penzugyi_pillanatkep` táblába ír, és a
+dashboard onnan olvas — az n8n MCP állapotától függetlenül.
+
+**1. Drive-mentés (ez az elsődleges).** Egy ütemezett workflow naponta kiírja a QUiCK
+tételszintű kivonatát JSON-ként a Drive-ra:
+
+```
+0Könyvelési anyag / QUiCK adatkivonatok      18Kp0cYS5pRa_FDfrWkZcjCqFrzUEr8IH
+fájlnév: QUiCK kivonat ÉÉÉÉ-HH-NN.json
+```
+
+Miért ez az első: a Drive **külön hozzáféréssel** működik, tehát valóban független az
+n8n-től, és nem kell hozzá új infrastruktúra. Dátumos fájlnév, mappánként egy nap egy
+fájl — így nincs szükség fájl-ID szerinti felülírásra, és nem keletkezik duplikátum
+(a duplikátum-probléma dokumentálva feljebb).
+
+Napi egy fájl ~300 kB, egy hívás — a Drive percenkénti kvótáját nem érinti, az ugyanis
+kérésszám-, nem tárhelykorlát.
+
+**2. Supabase-kiterítés (másodlagos).** Ugyanaz az adat egy táblába is mehet a meglévő
+`n8n-gazdasag-bridge` edge functionön keresztül, és onnan SQL-lel kérdezhető.
+
+> **Ez jelenleg nem építhető meg.** A Supabase connector egy **másik fiókhoz** van kötve:
+> az MS-E APP projektje (`ivwocffbjosrnwratmel`) nem szerepel a `list_projects`
+> kimenetében, és a `list_tables` rá jogosultsági hibát ad. Amíg ez nincs rendezve, az
+> n8n ki tudna írni a táblába, de **visszaolvasni innen nem lehet** — vagyis tartalékként
+> nem működik. Előbb a connector hatókörét kell kiterjeszteni a pénzügyi projektre.
+
+**3. Munkameneten belüli mentés (ingyen van, mindig csináld).** Minden QUiCK-lekérés nyers
+kimenetét mentsd a munkamenet scratchpad könyvtárába (`nyers.json` néven jellemzően).
+Ez mentett meg 2026-09-07-én: az n8n nem volt elérhető, de a szeptember 3-i kivonatból a
+júliusi–augusztusi kimutatás elkészült. **Korlátja**, hogy a konténer a munkamenet végén
+megszűnik, tehát munkamenetek között nem véd.
+
+### Amit a tartalék NEM old meg
+
+Csak az **adatlekérés** ellen véd. Workflow-t szerkeszteni, futtatni vagy publikálni
+továbbra is csak élő n8n-kapcsolattal lehet — és minden mentett kivonat annyira friss,
+amennyire a mentés napja. A szállítói számlák utólag érkeznek, ezért egy régebbi kivonat
+a folyó hónapra mindig **alulbecsül**; ezt a kimutatásban ki kell írni.
