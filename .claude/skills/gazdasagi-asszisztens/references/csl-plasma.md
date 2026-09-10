@@ -236,6 +236,32 @@ A QUiCK-lekérdezés `from_date`-je 2025-10-01, a kód szűr a pontos fordulóna
 ügyfélszabály, nem feltételezés: a CSL-nél nem számolunk rá semmit. (Az ERSTE-s
 házaknál ezzel szemben 15% jutalék van a hirdetési kereten — a kettőt ne keverd.)
 
+### A QUiCK nem tárol számlatételeket — de a számlaképet igen
+
+Ellenőrizve 2026-09-10-én, a `/2/expenses/` teljes objektumán. A költség alatt
+**csak `assignments[]` van**, és annak mezői: `expense_type`, `net_amount`,
+`gross_amount`, `vat`, `vat_amount`, `tags`, `id`. **Nincs megnevezés, mennyiség
+vagy egységár** — a tipikus számlán egyetlen assignment áll, egy összeggel.
+
+Vagyis a továbbszámlázási tábla tételsorai **nem jöhetnek a QUiCK-ből**, csak a
+számlaképről. Az viszont elérhető: `has_artifact` és `artifact_filename` megvan, a
+**`POST /1/artifacts/expense/`** pedig `{ids: [...]}` törzsre aláírt S3-linkeket ad
+vissza (1 óra érvényesség), amik tokenszó nélkül letölthetők. Így egy hiányzó
+számlakép a havi mappa újratöltése nélkül is megszerezhető — a
+`QUiCK artifacts felderítés` workflow (`kZMflW5ySpgnWSvE`) pontosan ezt csinálja.
+
+**A nyomdai számláknál a szállítólevél mondja meg a várost.** Az INNOVARIANT-számlák
+PDF-je tartalmazza a szállítólevelet is, azon a „Szállítási cím" a CSL adott
+telephelye (pl. `26/2213` → Debrecen, Csapó u. 42.; `26/2098` → Nyíregyháza, Korzó).
+Ha a `Hivatkozás/Szállító száma` több szállítólevelet sorol fel, de csak egy van
+mellékelve, a maradék mennyiség városa nem derül ki — ilyenkor kérdezni kell.
+
+**Ellenőrizd a nettó/bruttó cserét.** Valós eset: az INNOVARIANT `26/2214` a
+QUiCK-ben 150 482 Ft nettóként, 0% áfával szerepel, miközben a számlán nettó
+118 490 + áfa 31 992 = bruttó 150 482. A bruttó került be nettóként, ami
+31 992 Ft-tal emelte volna a továbbszámlázást. Jelzés rá: `vat_amount = 0`, miközben
+a szállító áfás. **Minden 0 áfás sort nézz meg a számlaképen.**
+
 ## 2. Továbbszámlázandó tételek — „CSL továbbszámlázás — havi lista"
 
 `btbpNJoEBNC98uA7`, aktív, minden hónap **8-án 8:00**, levél az info@ címre,
