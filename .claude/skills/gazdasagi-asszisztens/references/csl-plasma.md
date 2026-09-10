@@ -63,6 +63,13 @@ fiókblokkot), vagy a Meta Ads Manager számlázási előzménye.
 A Google ezzel szemben a **billing fiók azonosítóját** írja ki
 (`GOOGLE*ADS<azonosító>`), így ott a kivonat önmagában elég.
 
+A **Metricool sem segít** a CSL-nél: a `CSL Plasma Magyarország` márka
+(`blogId 5993507`) `networksData` mezője üres — egyetlen hálózat sincs bekötve,
+így a `/stats/facebookads/campaigns` és `/stats/adwords/campaigns` üres tömböt ad.
+Ez eltér az ERSTE-s házaktól, ahol a hirdetési fiók be van kötve. Amíg ez így van,
+a CSL hirdetési költése **kizárólag a platformszámlákból** jön; a hónap közbeni
+állás csak a bankkártyás terhelésekből becsülhető.
+
 Következmény: **az előleg-egyenleget a számlák viszik, nem a kártyaterhelések.**
 A kivonat arra jó, hogy kiderüljön, melyik platformszámlát nem töltöttük még le.
 
