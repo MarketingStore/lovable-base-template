@@ -24,6 +24,48 @@ Ezek nélkül semmi nem működik, és ha a QUiCK-ben átnevezik őket, **itt ke
 | Költségtípus — TikTok | `152134` | TikTok költség |
 | Költségtípus — minden más | `91110` | Projekt költség |
 
+### A hirdetési fiókok azonosítói — a címkétől független ellenőrzés
+
+A Meta-számlák száma `FBADS-<fiókblokk>-<sorszám>` alakú, és a **fiókblokk a hirdetési
+fiók azonosítója**. A CSL három fiókja ezen a három blokkon fut:
+
+| Fiókblokk | Számla | Nettó (2025-10-01 – 2026-08-31) |
+|---|---|---|
+| `FBADS-426` | 29 | 2 810 669 Ft |
+| `FBADS-469` | 33 | 4 425 250 Ft |
+| `FBADS-569` | 26 | 2 775 777 Ft |
+
+A más ügyfelekhez tartozó Meta-fiókok: `036`, `060`, `159`, `641` — ezek mind
+`Projekt költség` típust kapnak, a CSL hármas mind `Facebook`-ot.
+
+**A szétválás 141 számlán, 11 hónapon át hibátlan**: a három CSL-fiókból egyetlen
+számla sem esett CSL-címke nélkül, és a másik négy fiókból egyetlen sem kapott
+CSL-címkét. Ezért a fiókblokk használható **második, független ellenőrzésként** a
+címke mellé: ha egy `426/469/569`-es számla címkézetlenül érkezik, az hiba, és ha egy
+CSL-címkés Meta-számla nem ezen a három blokkon fut, az is.
+
+A fiók → telephely (Nyíregyháza / Debrecen / Miskolc) megfeleltetés **nincs
+megerősítve**. A méretsorrend alapján a `469` a legnagyobb, de ezt a Meta Ads
+Managerben egy pillantással le kell ellenőrizni, mielőtt telephelyre bontott
+kimutatás készül belőle.
+
+A **Google** oldalon a CSL egyetlen fiókon fut, havi egy számlával (2026-ban
+407 212 – 521 285 Ft/hó). A bankkártyás terhelésen ez a `GOOGLE*ADS3939506105`
+azonosítón jelenik meg; a `GOOGLE*ADS5899243315` **nem** a CSL-é.
+
+### Amit a bankszámlakivonatból NEM lehet megállapítani
+
+A kártyaterheléseknél a Meta leírása `FACEBK *<token>` alakú, és **a token
+terhelésenként más** — nem a fiók azonosítója. A kivonatból tehát nem dönthető el,
+melyik Facebook-terhelés melyik ügyfélé; ehhez a Meta-számla kell (az hordozza a
+fiókblokkot), vagy a Meta Ads Manager számlázási előzménye.
+
+A Google ezzel szemben a **billing fiók azonosítóját** írja ki
+(`GOOGLE*ADS<azonosító>`), így ott a kivonat önmagában elég.
+
+Következmény: **az előleg-egyenleget a számlák viszik, nem a kártyaterhelések.**
+A kivonat arra jó, hogy kiderüljön, melyik platformszámlát nem töltöttük még le.
+
 A `revenue_types` és `expense_types` szótár **magában a válaszban jön**: a
 `/1/incomes/` `results.revenue_types[]`, a `/2/expenses/` `results.expense_types[]`
 alatt, `{id, name}` alakban. Nem kell külön végpontot keresni hozzá.
