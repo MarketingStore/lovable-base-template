@@ -164,6 +164,10 @@ A legnagyobb ügyfélnél két visszatérő feladat fut a havi körön kívül: 
 hirdetési előleg** követése (mikor kell kiállítani a következő előlegszámlát) és a
 **továbbszámlázott ételek** nyilvántartása.
 
+Mellettük egy harmadik, kézzel indított feladat: a továbbszámlázott tételekhez a CSL
+**megrendelőt és teljesítésigazolást** is vár a saját formájában, párban — ezt a
+`scripts/csl_megrendelo_tig.py` építi a végleges számlák alapján.
+
 Az előleget hetente számolja a „CSL online hirdetés — előleg egyenleg" workflow. Az
 ételeket **nem lehet gépiesíteni**, mert a QUiCK-ben nincs olyan mező, ami az ételt
 megkülönböztetné a nyereménytől — a CSL alatt minden nem-hirdetési tétel ugyanaz a

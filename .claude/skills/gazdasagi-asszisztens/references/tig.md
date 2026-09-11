@@ -12,7 +12,7 @@ Van, ahol fordítva is kell: az alvállalkozók (pl. e.v.-k) teljesítéséről 
 amit szintén a megrendelő ír alá. Egy hónapra tehát ugyanannál az ügyfélnél több TIG is
 készülhet.
 
-## Két sablon
+## Három sablon
 
 ### Általános — a legtöbb ügyfélnél
 
@@ -77,6 +77,14 @@ Megtakarítás-variánsnál a teljesítési időszak sora kiegészül:
 "teljesitesi_idoszak": "2026.08.01. – 2026.08.31. - 2025. évi költségvetés megtakarításainak felhasználása",
 "fajlnev": "08_NFP_marketing_TIG_2026_megtak.docx"
 ```
+
+### CSL Plasma — megrendelő + TIG párban
+
+A CSL a továbbszámlázott tételekhez **két dokumentumot** vár a saját formájában, és a
+TIG-hez mindig tartozik egy nagyjából egy hónappal korábbi keltű megrendelő is. Külön
+szkript építi (`scripts/csl_megrendelo_tig.py`), a sablonok az `assets/` alatt
+vannak. Részletek — dátumlogika, PO-szakaszolás, és hogy a tételeket miért a
+**végleges számláról** kell átvenni, nem a munkatáblából: `references/csl-plasma.md`.
 
 ## Használat
 

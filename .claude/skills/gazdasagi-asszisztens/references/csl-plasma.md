@@ -372,6 +372,59 @@ A besorolatlan oszlop **nullára ment**: a korábban típus nélküli augusztusi
 számlák (MS-2026-220…226) azóta megkapták a bevételtípust, és a júliusi sorban
 jelennek meg — ott a kiszámlázott 3 899 332 Ft.
 
+## 3. Megrendelő és teljesítésigazolás a továbbszámlázáshoz
+
+A továbbszámlázott tételekhez a CSL **két dokumentumot** vár, a saját formájában:
+egy **megrendelőt** és egy **teljesítésigazolást**. A sorrend és a dátumlogika:
+
+> A megrendelő kelte nagyjából **egy hónappal** korábbi, mint a TIG-é, a TIG pedig a
+> számla kiállításának napjával kel. Példa: megrendelő 2026.07.08. → TIG 2026.08.10.;
+> megrendelő 2026.08.11. → TIG 2026.09.11.
+
+A megrendelő helye **Szeged**, a TIG-é **Budapest** — ez az ügyfél formájából jön, ne
+cseréld fel.
+
+### A tételsorokat a VÉGLEGES SZÁMLÁRÓL vedd, ne a munkatáblából
+
+Ez a legfontosabb szabály, és valós eltérésen alapul. A 2026. augusztusi kötegnél:
+
+- a munkatábla a Plazma kérdőívet Miskolc 8 000 + Nyíregyháza 10 000 bontásban vitte,
+  a számlán viszont **egy sor, 18 000 db**;
+- a Kuponfüzet egységára a táblában 79,10, a számlán **79,101**, hogy a szorzat kerek
+  79 101 Ft legyen.
+
+A megrendelőnek, a TIG-nek és a számlának **forintra egyeznie kell** — a számla a
+horgony, mert az már kiment.
+
+### A szakaszolás a PO-számokat követi
+
+Minden szakasz = egy PO = egy számla. A szakaszok fölé opcionálisan kerül egy római
+számozású **fejezet** (helyszín vagy esemény), ha a hónapban több helyszín van:
+
+- **2026. július**: három fejezet (Debrecen – Campus Fesztivál, Miskolc – Centrum
+  nyitás, Egyéb), fejezetenként két PO — ajándékok és szoftver/nyomda.
+- **2026. augusztus**: nincs rendezvény, a bontás CSL Club kontra a többi, ezért
+  fejezet sincs, csak két szakasz (PO 4400911742 és 4400911740).
+
+A megrendelés tárgyát is igazítsd ahhoz, ami a hónapban ténylegesen volt: júliusban
+`Kampányokhoz kapcsolódó ajándékok beszerzése, szállítása, nyomdai anyagok,
+szoftverek, rendezvényszervezéshez kapcsolódó tételek`, augusztusban viszont csak
+`Nyomdai anyagok, szoftverek beszerzése, szállítása`.
+
+### Használat
+
+A két sablon (`assets/csl_megrendelo_sablon.docx`, `assets/csl_tig_sablon.docx`) az
+ügyfél saját formája — **nem építjük újra**, a másolatukat töltjük ki, így a fejléc,
+a betűk és a táblázatstílus változatlan marad.
+
+```bash
+python3 scripts/csl_megrendelo_tig.py --minta > csl.json   # majd töltsd ki
+python3 scripts/csl_megrendelo_tig.py csl.json --kimenet ./out
+```
+
+A szkript kiírja szakaszonként és összesen az összeget — **olvasd vissza**, és vesd
+össze a számlákkal, mielőtt továbbadod.
+
 ## A felderítő workflow
 
 `HbaCk0V2b5Dl57iy` („CSL felderítés"), inaktív, kézi, **csak olvas**. Ez térképezte
